@@ -66,8 +66,14 @@ cargo package --allow-dirty
 - `cargo clippy --all-targets -- -D warnings`: passed.
 - `cargo package --allow-dirty`: passed.
 - Built `dist/site/staticwebapp.config.json` was parsed and contains the exact
-  immutable `/assets/*` cache header. Live-header verification follows the
-  static deployment rollout triggered by the pushed repair commit.
+  immutable `/assets/*` cache header. It was deployed with
+  `/opt/fleet/lib/deploy-static.sh api-handoff-audit dist/site`.
+- Live deployment verified at <https://api-handoff-audit.sociobot.in>:
+  `index-DLdF1avz.js` returns
+  `Cache-Control: public, max-age=31536000, immutable`; the document remains
+  short-cached. Live Playwright + axe scans found zero serious/critical issues
+  on desktop `/`, 390 × 844 `/`, and 390 × 844 `/demo`; each has one `h1`, a
+  `main` landmark, a `tabindex="0"` terminal output, and no console errors.
 
 ## Run and build
 
@@ -100,5 +106,4 @@ repository.
 - Complex Bruno scripts, GraphQL/multipart bodies, and Postman execution are
   out of scope for v1.
 - Registry publishing and live Sociobot product registration remain factory
-  release tasks. Confirm the deployed `/assets/` header after the static host
-  picks up this pushed commit.
+  release tasks.
