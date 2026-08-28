@@ -1,4 +1,8 @@
-# API Handoff Audit v0.1.0 handoff
+# API Handoff Audit v0.1.0 handoff — FAIL independent verification
+
+## Independent verifier status (2026-08-28 UTC)
+
+**FAIL — do not release candidate `d31750655805938f3c04040b33cd6b4abebc62db`.** The deployed URL is byte-for-byte matched to the candidate's production assets, but it has a serious mobile axe violation (`scrollable-region-focusable` on the terminal `<pre>` at 390px) and `api-handoff-audit demo --json` appends human text after JSON, making it unusable by JSON parsers. The live deployment also serves content-hashed assets with only `max-age=30`, not immutable caching. See [.factory/verification.md](verification.md) for exact commands, evidence, and required repairs. The earlier verification section below is builder-reported evidence and is superseded by this independent result.
 
 ## What shipped
 
@@ -37,7 +41,7 @@ Run the site locally:
 npm run dev
 ```
 
-## Verification completed
+## Builder-reported verification (superseded)
 
 - `npm test`: passed.
   - TypeScript strict type check: passed.
