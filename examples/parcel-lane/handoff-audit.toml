@@ -1,0 +1,32 @@
+version = 1
+project = "Parcel Lane API"
+setup_steps = [
+  "Copy .env.example to .env.handoff",
+  "Run cargo run --bin parcel-lane-server"
+]
+
+[[variables]]
+name = "API_TOKEN"
+description = "A token from the staging API owner"
+required = true
+secret = true
+
+[[fixtures]]
+path = "fixtures/order.json"
+description = "A small order for the create flow"
+
+[targets.local]
+base_url = "http://127.0.0.1:4010"
+
+[targets.staging]
+base_url = "https://staging.parcel-lane.example"
+
+[[smoke]]
+name = "health"
+request = "requests/health.bru"
+expect_status = [200]
+
+[[smoke]]
+name = "create-order"
+request = "requests/create-order.http"
+expect_status = [201]

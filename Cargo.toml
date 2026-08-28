@@ -1,0 +1,34 @@
+[package]
+name = "api-handoff-audit"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.85"
+description = "Check an API repository before a teammate inherits it"
+license = "MIT"
+repository = "https://github.com/B-Divyesh/sf-api-handoff-audit"
+readme = "README.md"
+keywords = ["api", "handoff", "cli", "bruno", "postman"]
+categories = ["command-line-utilities", "development-tools"]
+exclude = ["site/", "tests/", ".factory/", "dist/", "package*.json", "playwright.config.ts"]
+
+[[bin]]
+name = "api-handoff-audit"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+regex = "1.11"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+url = "2.5"
+walkdir = "2.5"
+
+[dev-dependencies]
+tempfile = "3.20"
+
+[profile.release]
+strip = true
+lto = "thin"
+codegen-units = 1

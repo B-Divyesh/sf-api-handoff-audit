@@ -1,0 +1,9 @@
+POST {{BASE_URL}}/v1/warehouses/{{WAREHOUSE_ID}}/orders
+Authorization: Bearer {{API_TOKEN}}
+Content-Type: application/json
+
+{
+  "order_id": "ord_1042",
+  "service": "express",
+  "fixture": "fixtures/order.json"
+}
