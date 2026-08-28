@@ -1,0 +1,14 @@
+{
+  "slug": "api-handoff-audit",
+  "title": "API Handoff Audit",
+  "summary": "Check an API repository before a teammate inherits it.",
+  "artifact_class": "cli",
+  "user": "Small engineering teams handing a shared API workflow to a new contributor.",
+  "smallest_useful_product": "A CLI that finds missing variables and setup gaps, runs named smoke requests against explicit local or staging targets, and writes a redacted handoff report.",
+  "monetization": "freemium",
+  "constraints": [
+    "Never upload request bodies or secrets by default.",
+    "Redact values in reports.",
+    "Support only explicit local or staging endpoints in v1."
+  ]
+}
