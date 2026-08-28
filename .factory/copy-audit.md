@@ -12,7 +12,7 @@ Checked on 28 August 2026. Word counts treat hyphenated terms, paths, and CLI fl
 | A preflight check for API repositories | 6 | Pass |
 | Check an API handoff before it stalls | 7 | Pass |
 | For small teams giving a shared API workflow to a new contributor. | 11 | Pass |
-| Try it with sample data | 6 | Pass |
+| Try it with sample data | 5 | Pass |
 | See a complete audit with one real gap. | 8 | Pass |
 | Free local audit. | 3 | Pass |
 | No account needed. | 3 | Pass |
@@ -69,4 +69,4 @@ Checked on 28 August 2026. Word counts treat hyphenated terms, paths, and CLI fl
 | The paid add-on | CI Pack |
 | The included example | sample data |
 
-Catalog description: “Check an API repository before a teammate inherits it.” It starts with a verb and contains 52 characters.
+Catalog description: “Check an API repository before a teammate inherits it.” It starts with a verb and contains 54 characters.

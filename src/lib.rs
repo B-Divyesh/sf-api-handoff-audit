@@ -321,7 +321,7 @@ pub fn audit(
         });
     }
     for fixture in &config.fixtures {
-        if !safe_child(&root, &fixture.path).is_some_and(|p| p.is_file()) {
+        if !safe_existing_child(&root, &fixture.path).is_some_and(|p| p.is_file()) {
             findings.push(finding(
                 "FIX001",
                 Severity::Error,
@@ -332,7 +332,7 @@ pub fn audit(
         }
     }
     for smoke in &config.smoke {
-        if !safe_child(&root, &smoke.request).is_some_and(|p| p.is_file()) {
+        if !safe_existing_child(&root, &smoke.request).is_some_and(|p| p.is_file()) {
             findings.push(finding(
                 "SMOKE002",
                 Severity::Error,
@@ -366,6 +366,15 @@ fn safe_child(root: &Path, relative: &str) -> Option<PathBuf> {
         return None;
     }
     Some(root.join(path))
+}
+
+fn safe_existing_child(root: &Path, relative: &str) -> Option<PathBuf> {
+    let child = safe_child(root, relative)?;
+    let canonical_root = root.canonicalize().ok()?;
+    let canonical_child = child.canonicalize().ok()?;
+    canonical_child
+        .starts_with(&canonical_root)
+        .then_some(canonical_child)
 }
 
 fn finding(
@@ -536,7 +545,7 @@ pub fn run_smoke(
         .iter()
         .find(|s| s.name == smoke_name)
         .ok_or_else(|| format!("Smoke request {smoke_name} is not configured."))?;
-    let request_path = safe_child(root, &smoke.request)
+    let request_path = safe_existing_child(root, &smoke.request)
         .ok_or("The smoke request path must stay inside the repository.")?;
     let text = fs::read_to_string(&request_path)
         .map_err(|e| format!("Request {} could not be read: {e}", smoke.request))?;
@@ -582,12 +591,9 @@ pub fn run_smoke(
             Some(response.status().as_u16()),
             format!("Received HTTP {}.", response.status().as_u16()),
         ),
-        Err(error) => (
+        Err(_) => (
             None,
-            format!(
-                "The request failed: {}",
-                safe_network_error(&error.to_string(), &values)
-            ),
+            "The request could not reach the configured target.".into(),
         ),
     };
     let passed = status.is_some_and(|s| smoke.expect_status.contains(&s));
@@ -600,15 +606,6 @@ pub fn run_smoke(
         passed,
         detail,
     })
-}
-
-fn safe_network_error(error: &str, values: &BTreeMap<String, String>) -> String {
-    values
-        .values()
-        .filter(|v| !v.is_empty())
-        .fold(error.to_owned(), |text, value| {
-            text.replace(value, "[redacted]")
-        })
 }
 
 pub fn terminal(report: &Report) -> String {
@@ -866,6 +863,21 @@ mod tests {
         let root = Path::new("/tmp/project");
         assert!(safe_child(root, "requests/one.http").is_some());
         assert!(safe_child(root, "../secret").is_none());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn rejects_a_symlink_to_a_request_outside_the_repository() {
+        use std::os::unix::fs::symlink;
+        let root = tempdir().unwrap();
+        let outside = tempdir().unwrap();
+        fs::write(outside.path().join("secret.http"), "GET http://localhost\n").unwrap();
+        symlink(
+            outside.path().join("secret.http"),
+            root.path().join("linked.http"),
+        )
+        .unwrap();
+        assert!(safe_existing_child(root.path(), "linked.http").is_none());
     }
 
     #[test]
