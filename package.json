@@ -1,0 +1,25 @@
+{
+  "name": "api-handoff-audit-workspace",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config site/vite.config.ts",
+    "build:cli": "cargo build --release",
+    "build:site": "vite build --config site/vite.config.ts",
+    "build": "npm run build:cli && npm run build:site",
+    "test:rust": "cargo test",
+    "test:site": "vitest run --config site/vitest.config.ts",
+    "test:e2e": "npm run build:site && playwright test",
+    "test": "npm run test:rust && npm run test:site && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@fontsource/ibm-plex-mono": "5.2.7",
+    "@fontsource/space-grotesk": "5.2.10",
+    "@playwright/test": "1.58.2",
+    "typescript": "6.0.2",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  }
+}

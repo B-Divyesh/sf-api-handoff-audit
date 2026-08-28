@@ -1,0 +1,58 @@
+[
+  {
+    "id": "repo-gaps",
+    "claim": "Finds undocumented variables and setup gaps before handoff",
+    "where": "landing page and README",
+    "test": "npm run test:e2e -- --grep @claim:repo-gaps",
+    "sandbox": "bundled Parcel Lane repository in a fresh temporary directory"
+  },
+  {
+    "id": "workspace-formats",
+    "claim": "Scans Bruno, Postman, and .http files for variable references",
+    "where": "landing page and README",
+    "test": "npm run test:e2e -- --grep @claim:workspace-formats",
+    "sandbox": "fresh temporary repository with one file of each supported type"
+  },
+  {
+    "id": "local-free-audit",
+    "claim": "The free audit runs locally without an account, telemetry, or a network request",
+    "where": "landing facts, privacy page, and README",
+    "test": "npm run test:e2e -- --grep @claim:local-free-audit",
+    "sandbox": "fresh temporary repository with HTTP and HTTPS proxies pointed at a loopback request counter"
+  },
+  {
+    "id": "redacted-reports",
+    "claim": "Terminal, JSON, and HTML reports hide supplied variable values",
+    "where": "landing facts, product preview, and README",
+    "test": "npm run test:e2e -- --grep @claim:redacted-reports",
+    "sandbox": "fresh temporary repository with a known sentinel secret"
+  },
+  {
+    "id": "explicit-smoke",
+    "claim": "Runs only the named smoke request and does not follow redirects",
+    "where": "how it works, privacy page, and README",
+    "test": "npm run test:e2e -- --grep @claim:explicit-smoke",
+    "sandbox": "two fresh loopback HTTP servers and a temporary repository"
+  },
+  {
+    "id": "demo-sandbox",
+    "claim": "Demo changes are not saved and the demo sends no third-party requests",
+    "where": "demo banner",
+    "test": "npm run test:e2e -- --grep @claim:demo-sandbox",
+    "sandbox": "fresh browser context on /demo with request interception"
+  },
+  {
+    "id": "ci-pack",
+    "claim": "A valid $39 one-time CI Pack license reveals the workflow and two policy presets",
+    "where": "paid section and /ci-pack",
+    "test": "npm run test:e2e -- --grep @claim:ci-pack",
+    "sandbox": "fresh browser context with a recorded valid verify response"
+  },
+  {
+    "id": "license-cache",
+    "claim": "The site reuses a fresh license verdict for one day",
+    "where": "privacy page",
+    "test": "npm run test:e2e -- --grep @claim:license-cache",
+    "sandbox": "fresh browser context with a current cached verdict and intercepted license endpoint"
+  }
+]

@@ -40,7 +40,7 @@ The signature motion is a **sign warm-up**: cyan edges brighten once as a result
 
 ## Asset plan and provenance
 
-- `hero-market.webp`: original raster illustration generated for this product with `/opt/fleet/lib/gen-image.sh`, then converted locally to WebP. Prompt: “A cinematic editorial illustration of a narrow night market alley transformed into an API repository inspection lane; hanging neon placards shaped like file tabs, variable tags, a checklist clipboard and a small terminal window; deep ink black, electric cyan, hot pink and amber; tactile screen-printed texture, oblique perspective, room for UI overlay, no readable words, no logos, no people, no gradients, no watermark.” Deployment: factory image model. License: project-owned generated asset.
+- `hero-market-768.webp` and `hero-market-1280.webp`: original raster illustration generated for this product with `/opt/fleet/lib/gen-image.sh`, then converted locally to WebP. Prompt: “A cinematic editorial illustration of a narrow night market alley transformed into an API repository inspection lane; hanging neon placards shaped like file tabs, variable tags, a checklist clipboard and a small terminal window; deep ink black, electric cyan, hot pink and amber; tactile screen-printed texture, oblique perspective, room for UI overlay, no readable words, no logos, no people, no gradients, no watermark.” Deployment: factory image model. License: project-owned generated asset.
 - The route motif, wordmark, status marks, favicon, and Open Graph composition are hand-made in HTML/CSS/SVG in this repository. No stock assets or external icon sets.
 
 ## Accessibility behavior

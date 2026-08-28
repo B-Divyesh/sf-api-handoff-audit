@@ -619,8 +619,16 @@ pub fn terminal(report: &Report) -> String {
     };
     let mut out = format!("API HANDOFF AUDIT  {status}\n{}\n\n", report.project);
     out.push_str(&format!(
-        "{} workspace files scanned · {} setup steps · {} fixtures · {} smoke requests\n",
-        report.scanned_files, report.setup_steps, report.fixtures_checked, report.smoke_requests
+        "{} workspace files scanned · {} setup steps · {} {} · {} smoke requests\n",
+        report.scanned_files,
+        report.setup_steps,
+        report.fixtures_checked,
+        if report.fixtures_checked == 1 {
+            "fixture"
+        } else {
+            "fixtures"
+        },
+        report.smoke_requests
     ));
     if report.variables.is_empty() {
         out.push_str("Variables: none documented\n");
@@ -641,8 +649,15 @@ pub fn terminal(report: &Report) -> String {
         out.push_str("\nFindings\n");
         for f in &report.findings {
             out.push_str(&format!(
-                "  {} {:?}: {}\n    Next: {}\n",
-                f.code, f.severity, f.message, f.next_step
+                "  {} {:?}: {}{}\n    Next: {}\n",
+                f.code,
+                f.severity,
+                f.message,
+                f.file
+                    .as_ref()
+                    .map(|file| format!(" [{file}]"))
+                    .unwrap_or_default(),
+                f.next_step
             ));
         }
     }

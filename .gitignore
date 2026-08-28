@@ -1,5 +1,9 @@
 node_modules/
 dist/
+target/
+test-results/
+playwright-report/
+.factory/evidence/
 .env
 *.log
 graphify-out/

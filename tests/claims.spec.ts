@@ -1,0 +1,161 @@
+import { expect, test } from "@playwright/test";
+import { execFile } from "node:child_process";
+import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { promisify } from "node:util";
+
+const exec = promisify(execFile);
+const binary = join(process.cwd(), "target/debug/api-handoff-audit");
+
+test.beforeAll(async () => {
+  await exec("cargo", ["build", "--quiet"], { cwd: process.cwd() });
+});
+
+async function cleanProject(request = "GET {{BASE_URL}}/health\n") {
+  const root = await mkdtemp(join(tmpdir(), "handoff-claim-"));
+  await mkdir(join(root, "requests"));
+  await writeFile(join(root, "requests/health.http"), request);
+  return root;
+}
+
+test("@claim:repo-gaps finds the sample repository's undocumented variable", async () => {
+  const { stdout } = await exec(binary, ["demo"], { cwd: process.cwd() });
+  expect(stdout).toContain("WAREHOUSE_ID is used but not documented");
+  expect(stdout).toContain("requests/create-order.http");
+});
+
+test("@claim:local-free-audit runs without a license or network request", async () => {
+  let proxyRequests = 0;
+  const proxy = createServer((_request, response) => { proxyRequests += 1; response.writeHead(500).end(); });
+  await new Promise<void>(resolve => proxy.listen(0, "127.0.0.1", resolve));
+  const proxyPort = (proxy.address() as { port: number }).port;
+  const root = await cleanProject();
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Local sample'
+setup_steps=['Run the server']
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const { stdout } = await exec(binary, ["audit", root], { env: { ...process.env, HTTP_PROXY: `http://127.0.0.1:${proxyPort}`, HTTPS_PROXY: `http://127.0.0.1:${proxyPort}` } });
+  proxy.close();
+  expect(stdout).toContain("PASS");
+  expect(proxyRequests).toBe(0);
+});
+
+test("@claim:workspace-formats scans Bruno, Postman, and .http variable references", async () => {
+  const root = await mkdtemp(join(tmpdir(), "handoff-formats-"));
+  await writeFile(join(root, "one.bru"), "get {\n url: {{BASE_URL}}/{{BRUNO_ID}}\n}\n");
+  await writeFile(join(root, "two.http"), "GET {{BASE_URL}}/${HTTP_ID}\n");
+  await writeFile(join(root, "postman.json"), JSON.stringify({ info: { name: "Sample" }, url: "{{POSTMAN_ID}}" }));
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Format sample'
+setup_steps=['Run the server']
+[[variables]]
+name='BRUNO_ID'
+required=false
+[[variables]]
+name='HTTP_ID'
+required=false
+[[variables]]
+name='POSTMAN_ID'
+required=false
+[[smoke]]
+name='first'
+request='two.http'
+`);
+  const { stdout } = await exec(binary, ["audit", root, "--json"]);
+  const report = JSON.parse(stdout);
+  expect(report.scanned_files).toBe(3);
+  expect(report.variables.every((item: { used_by: string[] }) => item.used_by.length === 1)).toBe(true);
+});
+
+test("@claim:redacted-reports excludes supplied values from terminal, JSON, and HTML reports", async () => {
+  const root = await cleanProject("GET {{BASE_URL}}/health\nAuthorization: Bearer {{API_TOKEN}}\n");
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Secret sample'
+setup_steps=['Run the server']
+[[variables]]
+name='API_TOKEN'
+secret=true
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const env = { ...process.env, API_TOKEN: "do-not-print-this-value" };
+  for (const format of ["terminal", "json", "html"]) {
+    const output = join(root, `report.${format}`);
+    await exec(binary, ["audit", root, "--format", format, "--output", output], { env });
+    expect(await readFile(output, "utf8")).not.toContain("do-not-print-this-value");
+  }
+});
+
+test("@claim:explicit-smoke runs only the named request and does not follow redirects", async () => {
+  let requested = 0;
+  let followed = 0;
+  const destination = createServer((_request, response) => { followed += 1; response.writeHead(200).end("unexpected"); });
+  await new Promise<void>(resolve => destination.listen(0, "127.0.0.1", resolve));
+  const destinationPort = (destination.address() as { port: number }).port;
+  const target = createServer((_request, response) => { requested += 1; response.writeHead(302, { Location: `http://127.0.0.1:${destinationPort}/leave` }).end(); });
+  await new Promise<void>(resolve => target.listen(0, "127.0.0.1", resolve));
+  const targetPort = (target.address() as { port: number }).port;
+  const root = await cleanProject();
+  await writeFile(join(root, "requests/other.http"), "GET {{BASE_URL}}/other\n");
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Run sample'
+setup_steps=['Run the server']
+[targets.local]
+base_url='http://127.0.0.1:${targetPort}'
+[[smoke]]
+name='health'
+request='requests/health.http'
+expect_status=[302]
+[[smoke]]
+name='other'
+request='requests/other.http'
+`);
+  const { stdout } = await exec(binary, ["run", root, "--target", "local", "--smoke", "health"]);
+  target.close(); destination.close();
+  expect(stdout).toContain("Smoke health on local: PASS");
+  expect(requested).toBe(1);
+  expect(followed).toBe(0);
+});
+
+test("@claim:demo-sandbox resets sample changes and sends no third-party requests", async ({ page }) => {
+  const external: string[] = [];
+  page.on("request", request => { if (new URL(request.url()).origin !== "http://127.0.0.1:4173") external.push(request.url()); });
+  await page.goto("/demo");
+  await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
+  await page.getByRole("button", { name: "Mark documented" }).click();
+  await expect(page.getByText("No handoff gaps found")).toBeVisible();
+  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
+  expect(external).toEqual([]);
+});
+
+test("@claim:ci-pack verifies a license before revealing the paid workflow", async ({ page }) => {
+  await page.route("https://api.sociobot.in/api/v1/products/api-handoff-audit/verify?license=test-license", route => route.fulfill({ json: { valid: true, reason: "ok", expires_at: null } }));
+  await page.goto("/ci-pack");
+  await expect(page.getByText("$39")).toBeVisible();
+  await page.getByLabel("License token").fill("test-license");
+  await page.getByRole("button", { name: "Verify license" }).click();
+  await expect(page.getByRole("heading", { name: "CI Pack is active" })).toBeVisible();
+  await expect(page.getByText("actions/checkout@v4")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Bruno repository preset" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Postman repository preset" })).toBeVisible();
+});
+
+test("@claim:license-cache reuses a fresh license verdict without another request", async ({ page }) => {
+  let calls = 0;
+  await page.route("https://api.sociobot.in/**", route => { calls += 1; return route.fulfill({ json: { valid: true } }); });
+  await page.addInitScript(() => {
+    localStorage.setItem("sb_license:api-handoff-audit", "cached-license");
+    localStorage.setItem("sb_license_verdict:api-handoff-audit", JSON.stringify({ valid: true, checkedAt: Date.now() }));
+  });
+  await page.goto("/ci-pack");
+  await expect(page.getByRole("heading", { name: "CI Pack is active" })).toBeVisible();
+  expect(calls).toBe(0);
+});
