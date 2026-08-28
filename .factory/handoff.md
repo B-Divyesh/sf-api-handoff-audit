@@ -52,6 +52,7 @@ npm run dev
 - `npm audit --omit=dev`: zero vulnerabilities.
 - `cargo clippy --all-targets -- -D warnings`: passed.
 - `cargo package --allow-dirty`: packaged and verified successfully at 25.7 KiB compressed.
+- Fresh `git archive` checkout: `npm ci` and `npm run build` passed; binary reported `0.1.0` and `dist/site/index.html` existed.
 - Lighthouse mobile-class run: Performance 100, Accessibility 100, Best Practices 100, SEO 100.
 - Lighthouse metrics: LCP 1.66 s, CLS 0, total blocking time 0 ms.
 - Initial compiled JavaScript: 16.79 KB raw / 6.23 KB gzip.
