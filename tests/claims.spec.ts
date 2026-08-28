@@ -26,6 +26,19 @@ test("@claim:repo-gaps finds the sample repository's undocumented variable", asy
   expect(stdout).toContain("requests/create-order.http");
 });
 
+test("a clean packaged consumer can parse demo --json stdout", async () => {
+  const consumer = await mkdtemp(join(tmpdir(), "handoff-consumer-"));
+  const installRoot = join(consumer, "install");
+  await exec("cargo", ["package", "--allow-dirty", "--quiet"], { cwd: process.cwd() });
+  await exec("tar", ["-xzf", join(process.cwd(), "target/package/api-handoff-audit-0.1.0.crate"), "-C", consumer]);
+  await exec("cargo", ["install", "--path", join(consumer, "api-handoff-audit-0.1.0"), "--root", installRoot, "--quiet"]);
+  const command = join(installRoot, "bin", "api-handoff-audit");
+  const { stdout, stderr } = await exec(command, ["demo", "--json"]);
+  const report = JSON.parse(stdout);
+  expect(report.project).toBe("Parcel Lane API");
+  expect(stderr).toContain("HTML report:");
+});
+
 test("@claim:local-free-audit runs without a license or network request", async () => {
   let proxyRequests = 0;
   const proxy = createServer((_request, response) => { proxyRequests += 1; response.writeHead(500).end(); });
@@ -66,10 +79,12 @@ required=false
 name='first'
 request='two.http'
 `);
-  const { stdout } = await exec(binary, ["audit", root, "--json"]);
+  const reportOutput = join(root, "report.json");
+  const { stdout } = await exec(binary, ["audit", root, "--json", "--output", reportOutput]);
   const report = JSON.parse(stdout);
   expect(report.scanned_files).toBe(3);
   expect(report.variables.every((item: { used_by: string[] }) => item.used_by.length === 1)).toBe(true);
+  expect(JSON.parse(await readFile(reportOutput, "utf8"))).toEqual(report);
 });
 
 test("@claim:redacted-reports excludes supplied values from terminal, JSON, and HTML reports", async () => {
@@ -116,9 +131,10 @@ expect_status=[302]
 name='other'
 request='requests/other.http'
 `);
-  const { stdout } = await exec(binary, ["run", root, "--target", "local", "--smoke", "health"]);
+  const { stdout } = await exec(binary, ["run", root, "--target", "local", "--smoke", "health", "--json"]);
   target.close(); destination.close();
-  expect(stdout).toContain("Smoke health on local: PASS");
+  const report = JSON.parse(stdout);
+  expect(report.smoke_result.status).toBe("PASS");
   expect(requested).toBe(1);
   expect(followed).toBe(0);
 });

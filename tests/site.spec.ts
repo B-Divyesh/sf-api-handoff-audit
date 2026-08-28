@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 import AxeBuilder from "@axe-core/playwright";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
 const routes = ["/", "/demo", "/ci-pack", "/privacy", "/terms", "/404"];
 
@@ -33,6 +35,29 @@ test("the first screen fits a 390px phone without horizontal scroll", async ({ p
   await expect(page.getByRole("link", { name: "Try it with sample data" })).toBeVisible();
   const width = await page.evaluate(() => ({ body: document.body.scrollWidth, view: document.documentElement.clientWidth }));
   expect(width.body).toBeLessThanOrEqual(width.view);
+});
+
+for (const route of ["/", "/demo"]) {
+  test(`${route} exposes its mobile terminal output to keyboard users without serious axe issues`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto(route);
+    const output = page.locator('pre[aria-label="API Handoff Audit demo output"]').first();
+    await expect(output).toHaveAttribute("tabindex", "0");
+    await output.focus();
+    await expect(output).toBeFocused();
+    await expect(output).toHaveCSS("outline-style", "solid");
+    const results = await new AxeBuilder({ page }).analyze();
+    const serious = results.violations.filter(issue => ["serious", "critical"].includes(issue.impact ?? ""));
+    expect(serious).toEqual([]);
+  });
+}
+
+test("the deployment configuration gives hashed assets immutable caching", async () => {
+  const config = JSON.parse(await readFile(join(process.cwd(), "dist/site/staticwebapp.config.json"), "utf8")) as {
+    routes: { route: string; headers: Record<string, string> }[];
+  };
+  const assetRoute = config.routes.find(route => route.route === "/assets/*");
+  expect(assetRoute?.headers["Cache-Control"]).toBe("public, max-age=31536000, immutable");
 });
 
 test("keyboard users can reach and open the sample audit", async ({ page }) => {

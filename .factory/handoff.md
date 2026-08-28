@@ -1,23 +1,73 @@
-# API Handoff Audit v0.1.0 handoff — FAIL independent verification
+# API Handoff Audit v0.1.0 repair handoff
 
-## Independent verifier status (2026-08-28 UTC)
+## Release status
 
-**FAIL — do not release candidate `d31750655805938f3c04040b33cd6b4abebc62db`.** The deployed URL is byte-for-byte matched to the candidate's production assets, but it has a serious mobile axe violation (`scrollable-region-focusable` on the terminal `<pre>` at 390px) and `api-handoff-audit demo --json` appends human text after JSON, making it unusable by JSON parsers. The live deployment also serves content-hashed assets with only `max-age=30`, not immutable caching. See [.factory/verification.md](verification.md) for exact commands, evidence, and required repairs. The earlier verification section below is builder-reported evidence and is superseded by this independent result.
+The three release blockers from the independent verification of candidate
+`d31750655805938f3c04040b33cd6b4abebc62db` are repaired in this handoff.
+The artifact remains a Rust CLI with a static Vite documentation and demo
+site. The researched scope, bundled Parcel Lane demo, local-first behavior,
+and existing paid CI Pack flow are unchanged.
 
-## What shipped
+## Repairs
 
-- A Rust single-binary CLI with `audit`, `run`, and `demo` commands.
-- Repository scans for Bruno, Postman JSON, and `.http` variable references.
-- Checks for undocumented or missing variables, setup steps, fixtures, and smoke files.
-- Explicit smoke execution against configured `local` or HTTPS `staging` targets.
-- Redirect refusal, target-host checks, path traversal checks, timeouts, and CI exit codes.
-- Redacted terminal, JSON, and self-contained HTML reports.
-- A bundled Parcel Lane sample copied to a fresh temporary directory by `demo`.
-- A responsive static product site in the required night-market neon direction.
-- Real `/demo`, `/ci-pack`, `/privacy`, `/terms`, and `/404` routes.
-- A $39 one-time CI Pack flow using Sociobot checkout, restore, daily verification caching, a GitHub Actions starter, and two repository presets.
-- Original generated hero art, responsive WebP assets, Open Graph art, favicon, and self-hosted fonts.
-- Claims, demo, design, and copy audits under `.factory/`.
+1. **Mobile terminal keyboard access:** every rendered terminal/output `pre`
+   now has `tabindex="0"` and an accessible label. The established cyan
+   `:focus-visible` ring remains visible. This fixes axe's
+   `scrollable-region-focusable` finding at 390 px on both `/` and `/demo`.
+   CI Pack workflow and policy-output panes are covered too.
+2. **Strict CLI JSON stdout:** `api-handoff-audit demo --json` writes exactly
+   one report JSON value to stdout. Its temporary-report path and demo status
+   move to stderr. `audit` and `run` retain a JSON-only stdout contract when
+   JSON output is also written to `--output`.
+3. **Immutable hashed assets:** `staticwebapp.config.json` now applies
+   `Cache-Control: public, max-age=31536000, immutable` to `/assets/*`.
+   Documents keep the platform's short cache lifetime.
+
+## Regression coverage
+
+- `tests/site.spec.ts` runs direct axe scans at **390 × 844** for `/` and
+  `/demo`, verifies the terminal is keyboard focusable, and checks its visible
+  focus outline.
+- The same suite asserts that the built deployment configuration contains the
+  immutable `/assets/*` cache rule.
+- `tests/claims.spec.ts` builds a `.crate`, extracts it into a clean temporary
+  consumer, installs it with `cargo install --path`, invokes
+  `demo --json`, and parses stdout with `JSON.parse`. It also parses the JSON
+  stdout of `audit --json --output` and `run --json`.
+
+## Verification completed locally (2026-08-28 UTC)
+
+```sh
+npm ci
+npm test
+npm run build
+cargo clippy --all-targets -- -D warnings
+cargo package --allow-dirty
+```
+
+- `npm ci`: passed; npm reported 0 vulnerabilities.
+- `npm test`: passed: TypeScript strict check, 8 Rust tests, 2 Vitest tests,
+  and 22 Chromium Playwright tests. All eight claims in
+  `.factory/claims.json` passed from their sandbox entry points.
+- Browser checks: desktop axe scans pass for `/`, `/demo`, `/ci-pack`,
+  `/privacy`, `/terms`, and `/404`; the new direct mobile axe scans pass at
+  390 × 844. Keyboard coverage confirms the skip link, primary demo action,
+  history focus movement, terminal focus, and a visible focus ring. Privacy
+  and demo-storage checks remain covered by `@claim:demo-sandbox`.
+- CLI policy checks remain covered by Rust and claim tests: no-network audit,
+  explicit named smoke request, redirect refusal, redaction, invalid-input
+  exit behavior, and JSON parser compatibility.
+- Clean packaged consumer regression passed inside the Playwright run. The
+  package was created with `cargo package --allow-dirty`, extracted to a fresh
+  temporary directory, installed, and its `demo --json` stdout parsed.
+- `npm run build`: passed. `target/release/api-handoff-audit` and
+  `dist/site/index.html` exist. Initial compiled JS is 16,920 bytes raw /
+  6,219 bytes gzip, below the 200 KB budget.
+- `cargo clippy --all-targets -- -D warnings`: passed.
+- `cargo package --allow-dirty`: passed.
+- Built `dist/site/staticwebapp.config.json` was parsed and contains the exact
+  immutable `/assets/*` cache header. Live-header verification follows the
+  static deployment rollout triggered by the pushed repair commit.
 
 ## Run and build
 
@@ -25,64 +75,30 @@
 npm ci
 npm test
 npm run build
-```
-
-`npm run build` compiles `target/release/api-handoff-audit` and builds the deployable site at `dist/site/`. The required deploy root contains `index.html`.
-
-Try the CLI without setup:
-
-```sh
 cargo run -- demo
 ```
 
-Run the site locally:
+The deployable static root is `dist/site/`. To prepare the crate for the
+factory publisher, run `cargo package --allow-dirty`; do not publish from this
+repository.
 
-```sh
-npm run dev
-```
+## Privacy and scope
 
-## Builder-reported verification (superseded)
+- `audit` is local and constructs no HTTP client.
+- `run` contacts only the named local or HTTPS staging target and does not
+  follow redirects.
+- Reports exclude supplied variable values and response bodies.
+- The browser demo is in-memory and makes no third-party request.
+- Fonts, art, and runtime dependencies are self-hosted; there is no analytics.
+- CI Pack license data stays in browser storage and verifies only with the
+  Sociobot endpoint described on the privacy page.
 
-- `npm test`: passed.
-  - TypeScript strict type check: passed.
-  - Rust: 8 tests passed.
-  - Vitest: 2 tests passed.
-  - Playwright: 18 tests passed on Chromium 1.58.2.
-- Every claim in `.factory/claims.json` passed against a fresh temporary repository or browser context.
-- Axe: no serious or critical issues on `/`, `/demo`, `/ci-pack`, `/privacy`, `/terms`, or `/404`.
-- Factory URL check: one `<h1>`, `lang`, `<main>`, alt text, and zero console errors.
-- Mobile check: no horizontal overflow at 390 × 844.
-- Keyboard check: skip link, primary action, route focus, and back navigation passed.
-- `npm audit --omit=dev`: zero vulnerabilities.
-- `cargo clippy --all-targets -- -D warnings`: passed.
-- `cargo package --allow-dirty`: packaged and verified successfully at 25.7 KiB compressed.
-- Fresh `git archive` checkout: `npm ci` and `npm run build` passed; binary reported `0.1.0` and `dist/site/index.html` existed.
-- Lighthouse mobile-class run: Performance 100, Accessibility 100, Best Practices 100, SEO 100.
-- Lighthouse metrics: LCP 1.66 s, CLS 0, total blocking time 0 ms.
-- Initial compiled JavaScript: 16.79 KB raw / 6.23 KB gzip.
-- Compiled CSS: 14.47 KB raw / 4.01 KB gzip.
-- Self-hosted fonts: 28 KB total.
-- Hero images: 108 KB desktop and 44 KB mobile. Open Graph image: 80 KB.
+## Known v1 limits and next steps
 
-## Privacy and security notes
-
-- `audit` constructs no HTTP client and makes no network request.
-- `run` sends only the named request to the configured target origin.
-- Reports exclude environment values and response bodies.
-- The browser demo writes no storage and makes no third-party request.
-- The optional license token uses `sb_license:api-handoff-audit`. Its verdict uses `sb_license_verdict:api-handoff-audit`.
-- Site runtime dependencies, fonts, and art are self-hosted. There is no analytics code.
-- Static Web Apps headers include CSP, frame blocking, referrer policy, MIME protection, and a permissions policy.
-
-## Known v1 limits
-
-- Postman collections are scanned for variable references. Smoke execution uses `.http` files or simple Bruno method, URL, and header blocks.
-- Complex Bruno scripts, GraphQL bodies, multipart bodies, and Postman collection execution are out of scope for v1.
-- The CI Pack is delivered in the browser. Team report retention is not included because this release has no backend or hosted repository data.
-- Registry publishing and Sociobot product registration remain factory release tasks.
-
-## Next steps
-
-1. Register the `api-handoff-audit` paid product and confirm its $39 live price.
-2. Publish the Rust crate or attach platform binaries during the factory release.
-3. Add signed team report retention only with a documented retention and deletion policy.
+- Postman collections are scanned for variable references; smoke execution
+  supports `.http` files and simple Bruno method, URL, and header blocks.
+- Complex Bruno scripts, GraphQL/multipart bodies, and Postman execution are
+  out of scope for v1.
+- Registry publishing and live Sociobot product registration remain factory
+  release tasks. Confirm the deployed `/assets/` header after the static host
+  picks up this pushed commit.

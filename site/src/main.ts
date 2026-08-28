@@ -43,7 +43,7 @@ function demoBanner(): string {
 function terminal(): string {
   return `<div class="terminal" role="region" aria-label="Recorded terminal output">
     <div class="terminal-bar"><span aria-hidden="true">● ● ●</span><b>parcel-lane / audit</b><button data-replay>Replay output</button></div>
-    <pre aria-label="API Handoff Audit demo output">${terminalLines.map(line => `<span>${escapeHtml(line) || "&nbsp;"}</span>`).join("\n")}</pre>
+    <pre tabindex="0" aria-label="API Handoff Audit demo output">${terminalLines.map(line => `<span>${escapeHtml(line) || "&nbsp;"}</span>`).join("\n")}</pre>
   </div>`;
 }
 
@@ -97,7 +97,7 @@ function ciPack(): string {
       <form id="license-form"><label for="license">License token</label><div><input id="license" name="license" autocomplete="off" spellcheck="false" required><button type="submit">Verify license</button></div><p id="license-status" role="status"></p></form>
       <a class="button buy" href="https://api.sociobot.in/api/v1/products/api-handoff-audit/checkout">Buy the CI Pack</a>
     </section>
-    <section class="workflow ${unlocked ? "" : "locked"}" aria-labelledby="workflow-title"><div><h2 id="workflow-title">GitHub Actions starter</h2><p>${unlocked ? "Your workflow is ready to copy." : "Verify a license to reveal this workflow and two policy presets."}</p></div>${unlocked ? `<button data-copy-workflow>Copy workflow</button><pre><code>${escapeHtml(ciWorkflow)}</code></pre><div class="policy-presets"><h2>Policy presets</h2>${ciPresets.map((preset, index) => `<article><h3>${preset.name}</h3><button data-copy-preset="${index}">Copy preset</button><pre><code>${escapeHtml(preset.text)}</code></pre></article>`).join("")}</div>` : `<div class="lock-mark" aria-hidden="true">×</div>`}</section>
+    <section class="workflow ${unlocked ? "" : "locked"}" aria-labelledby="workflow-title"><div><h2 id="workflow-title">GitHub Actions starter</h2><p>${unlocked ? "Your workflow is ready to copy." : "Verify a license to reveal this workflow and two policy presets."}</p></div>${unlocked ? `<button data-copy-workflow>Copy workflow</button><pre tabindex="0" aria-label="GitHub Actions starter workflow"><code>${escapeHtml(ciWorkflow)}</code></pre><div class="policy-presets"><h2>Policy presets</h2>${ciPresets.map((preset, index) => `<article><h3>${preset.name}</h3><button data-copy-preset="${index}">Copy preset</button><pre tabindex="0" aria-label="${escapeHtml(preset.name)} policy preset"><code>${escapeHtml(preset.text)}</code></pre></article>`).join("")}</div>` : `<div class="lock-mark" aria-hidden="true">×</div>`}</section>
     <p class="fine-print">License data stays in this browser. See <a class="route-link" href="/privacy">Privacy</a> and <a class="route-link" href="/terms">Terms</a>.</p>`);
 }
 

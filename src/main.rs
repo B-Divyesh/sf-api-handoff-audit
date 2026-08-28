@@ -172,9 +172,13 @@ fn execute(cli: Cli) -> Result<ExitCode, String> {
                 println!("{}", json(&report)?);
             } else {
                 print!("{}", terminal(&report));
+                println!("\nDemo — sample data, nothing was saved to your repository.");
+                println!("HTML report: {}", path.display());
             }
-            println!("\nDemo — sample data, nothing was saved to your repository.");
-            println!("HTML report: {}", path.display());
+            if json_flag {
+                eprintln!("Demo — sample data, nothing was saved to your repository.");
+                eprintln!("HTML report: {}", path.display());
+            }
             Ok(ExitCode::SUCCESS)
         }
     }
@@ -189,7 +193,13 @@ fn write_report(report: &Report, format: Format, output: Option<PathBuf>) -> Res
     if let Some(path) = output {
         fs::write(&path, text)
             .map_err(|e| format!("Report {} could not be written: {e}", path.display()))?;
-        println!("Report written to {}", path.display());
+        if matches!(format, Format::Json) {
+            // JSON mode is intended for pipelines. Keep stdout parseable even
+            // when the caller also asks us to persist the same report.
+            println!("{}", json(report)?);
+        } else {
+            println!("Report written to {}", path.display());
+        }
     } else {
         println!("{text}");
     }
