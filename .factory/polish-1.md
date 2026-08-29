@@ -13,7 +13,7 @@
 | F-1-5 | Removed the time-sensitive no-checkout statement rather than leave an unowned pricing claim. | README copy audit; checkout absence regression |
 | F-1-6 | Added `build-artifacts` to `claims.json` and a real clean-build assertion for the binary and `dist/site/index.html`. | `@claim:build-artifacts` from clean clone |
 | F-1-7 | Removed factory-internal publishing wording from public README. | README copy audit |
-| F-1-8 | Removed untestable negative capability promises; scope now states the observed workflow boundary. | README and landing copy audit; `local-free-audit` |
+| F-1-8 | Removed untestable negative capability promises; remaining scope text is claim-owned observable behavior. | README and landing copy audit; `local-free-audit` |
 | F-1-9 | Rewrote “full local audit” as “runs local audits and named smoke requests.” | README copy audit |
 | F-1-10 | Removed vague “small” from the product description. | README copy audit |
 | F-1-11 | Removed the hero’s preflight eyebrow. | live `/`; `.factory/evidence/polish-1/home/screenshot-desktop.png` |

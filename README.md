@@ -103,6 +103,6 @@ npm run build:site
 
 ## Privacy and scope
 
-Audit reads local text files and does not use telemetry. Smoke runs send the selected request to the configured target. Reports show variable names and states, but never their values. You make repository changes yourself.
+Audit reads local text files and does not use telemetry. Smoke runs send the selected request to the configured target. Reports show variable names and states, but never their values.
 
 The product site has [privacy](https://api-handoff-audit.sociobot.in/privacy) and [terms](https://api-handoff-audit.sociobot.in/terms) pages. The MIT license is in [LICENSE](LICENSE).

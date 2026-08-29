@@ -58,7 +58,7 @@ function home(): string {
     <li><span>02</span><div><h3>Name one smoke request</h3><p>Choose a configured local or staging target. The CLI sends only that request.</p></div></li>
     <li><span>03</span><div><h3>Share the redacted report</h3><p>Write terminal, JSON, or HTML output without variable values or response bodies.</p></div></li>
   </ol></section>
-  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the audit does not do</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p><p>The CLI reports handoff gaps. You make repository changes yourself.</p></div></section>
+  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the audit does not do</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p></div></section>
   `);
 }
 

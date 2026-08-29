@@ -19,7 +19,6 @@ or uses a banned marketing word.
 | What the audit does not do | 6 | Pass — section name |
 | The audit reads local text files. It has no telemetry. | 10 | Pass — `local-free-audit` |
 | A smoke run contacts only the target you select. It never follows a redirect. | 14 | Pass — `explicit-smoke` |
-| The CLI reports handoff gaps. You make repository changes yourself. | 10 | Pass — accurate scope |
 
 ## First-screen read-aloud check
 
