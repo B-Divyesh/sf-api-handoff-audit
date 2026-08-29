@@ -1,61 +1,90 @@
-# API Handoff Audit — review 3 handoff
+# API Handoff Audit — polish 3 handoff
 
-**Status:** FAIL — review documentation committed; product code was not changed.
-**Reviewed commit:** `806f7f3a10466b50491ea1dcab8bf065073695fe`
+**Status:** PASS — all cumulative adversarial findings closed
+**Repair commits:** `bdc6ead`, `47ff585`
+**Deployed artifact:** `dist/site/` through the static work-order deploy
+**Production deployment:** `785737e3-74a5-4ddb-8f29-7bc9e3f7aefb`
 **Live URL:** <https://api-handoff-audit.sociobot.in>
-**Review record:** `.factory/review-3.md`
 
-## What was done
+## What changed
 
-- Ran the requested adversarial first-read review at the live URL in fresh
-  390 × 844 and 1440 × 900 Chromium contexts.
-- Tested the one-click browser sample, direct demo URL, correction/reset,
-  sticky phone banner, route navigation, back-button focus, request log, and
-  browser storage.
-- Read the brief, design thesis, claims, demo notes, all earlier reviews,
-  polish reports, verification reports, and the prior handoff.
-- Reviewed landing and README copy sentence by sentence, including word
-  counts, terminology, claims ownership, headings, and controls.
-- Cloned the repository with `git clone --no-local`, ran `npm ci`, each of the
-  14 literal claim commands, and the complete quality suite.
-- Checked live route metadata, 404 behavior, link crawl, mobile overflow,
-  axe at phone and desktop sizes, console output, headers, and the distinct
-  visual system.
+- Strengthened the `demo-sandbox` claim proof. It now checks empty
+  localStorage, sessionStorage, IndexedDB, Cache Storage, and OPFS before and
+  after the correction/reset/reload flow, while retaining same-origin request
+  verification.
+- Documented the complete no-storage contract in `.factory/demo.md` and its
+  exact sandbox in `.factory/claims.json`.
+- Rebuilt `.factory/copy-audit.md` from all rendered landing content and all
+  README prose. It corrects the audience sentence to 11 words and links
+  claim-like text to its claim.
+- Updated the catalog description to the verb-first sentence: “Check API
+  handoff gaps before a teammate inherits a repository.”
+- Strengthened the phone regression so it forces a completed bottom scroll and
+  proves the sticky demo banner plus both actions remain in the viewport.
+- Recorded the cumulative finding map and live screenshots in
+  `.factory/polish-3.md` and `.factory/evidence/polish-3/`.
 
-## Verification
+The product behavior already retained the previous repairs: direct
+`?demo=1`, isolated in-memory sample state, honest recorded rerun, plain first
+screen, route-specific metadata, History API focus changes, legal routes,
+designed HTTP 404, mobile layout, accessible terminal output, self-hosted
+assets, and the night-market inspection-board visual system.
 
-Fresh clone: `/tmp/api-handoff-review3.YXGMgr/clone`
+## How to run and verify
 
 ```sh
 npm ci
-# each literal command in .factory/claims.json, independently
 npm test
+npm run build
+cargo clippy --all-targets -- -D warnings
+cargo package --allow-dirty
+cargo run -- demo
 ```
 
-All 14 registered claim commands passed. `npm test` passed: TypeScript, 8 Rust
-tests, 1 Vitest test, and 31 Playwright tests. The build-artifacts claim also
-ran `npm run build` and verified the release binary plus `dist/site/index.html`.
+The browser demo is at `/demo?demo=1`. It loads immediately with the Parcel
+Lane sample, has a persistent “Demo — sample data, nothing is saved” banner,
+and Reset restores the finding. The CLI demo instead copies the sample to a new
+temporary directory and prints the report path.
 
-Live verification passed for cold first read, demo behavior, request isolation,
-route structure, metadata, direct/unknown 404, link crawl, browser history,
-focus changes, 390 px layout, and axe serious/critical checks on `/`,
-`/demo?demo=1`, `/privacy`, `/terms`, and an unknown route.
+## Exact verification evidence
 
-## Findings left
+A fresh no-local clone at `/tmp/api-handoff-polish3.JchqlT/clone` completed
+`npm ci`, then ran all 14 literal commands from `.factory/claims.json`
+individually:
 
-1. **F-3-1 (major):** the `demo-sandbox` claim test checks only local/session
-   storage and reload state. It must additionally prove no IndexedDB, Cache
-   Storage, or OPFS persistence, or prove a separate `demo:` namespace.
-2. **F-3-2 (minor):** `.factory/copy-audit.md` miscounts the audience sentence
-   and omits required rendered landing/README text. Regenerate it completely.
+`repo-gaps`, `absent-fixtures`, `workspace-formats`,
+`local-free-audit`, `env-file`, `redacted-reports`,
+`explicit-smoke`, `target-policy`, `exit-codes`,
+`cli-demo-isolation`, `package-install`, `build-artifacts`,
+`sample-report-content`, and `demo-sandbox`.
 
-The live manual storage inspection was empty for localStorage, sessionStorage,
-IndexedDB, Cache Storage, and OPFS; F-3-1 is an automated-proof gap, not an
-observed persistence defect.
+All passed. The same clone then passed `npm test` (8 Rust, 1 Vitest, 31
+Playwright tests), `npm run build`, clippy with warnings denied, and
+`cargo package --allow-dirty`. The build produced the release binary and
+`dist/site/index.html`; package verification succeeded.
 
-## Next steps
+The production deploy uploaded `dist/site` successfully. Cold live checks
+passed for `/`, `/demo?demo=1`, `/privacy`, and `/terms` using
+`/opt/fleet/lib/verify-url.sh`: no console errors, one h1, `main`,
+`lang=en`, title, and alt/button checks all pass. Fresh live axe scans across
+those routes plus `/missing-stall`, at 1440 × 900 and 390 × 844, reported
+zero serious or critical violations. `/missing-stall` returns a real HTTP
+404 with the designed shell; the browser emits only the expected failed-404
+document console message.
 
-Implement the two documentation/test repairs without changing the product’s
-scope, rerun the 14 claim commands and `npm test` from a fresh clone, then
-perform another full first-read review. No deployment, billing, DNS, or product
-code changes were made by this review.
+The demo was also checked live in a fresh phone context after a 1,936 px
+bottom scroll: the sticky banner remained at `y=0` with Reset demo and Start
+for real visible. A live correction/reset check observed zero localStorage,
+sessionStorage, IndexedDB, Cache Storage, and OPFS entries and no third-party
+requests. Direct-route metadata is present for Demo, Privacy, and Terms;
+hashed assets return immutable caching headers.
+
+Mobile Lighthouse scored Performance 100 and Accessibility 100 (LCP 1.4 s,
+CLS 0). Initial JavaScript is 11.95 kB raw / 4.42 kB gzip; CSS is 15.51 kB raw
+/ 4.16 kB gzip.
+
+## Known gaps and next steps
+
+None. For a registry release, the factory can publish the already verified
+crate with `cargo publish` using its own credentials; this worker did not
+publish it.
