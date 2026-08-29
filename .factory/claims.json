@@ -95,6 +95,6 @@
     "claim": "Demo changes are not saved and the demo sends no third-party requests",
     "where": "demo banner",
     "test": "npm run test:e2e -- --grep @claim:demo-sandbox",
-    "sandbox": "fresh browser context on /demo with request interception"
+    "sandbox": "fresh browser context on /demo?demo=1; inspect localStorage, sessionStorage, IndexedDB, Cache Storage, and OPFS before and after correction/reset; intercept every request"
   }
 ]

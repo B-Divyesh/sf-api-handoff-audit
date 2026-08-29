@@ -379,16 +379,53 @@ test("@claim:sample-report-content matches the CLI sample counts, finding, file,
   await expect(page.getByText("Add WAREHOUSE_ID under [[variables]] in handoff-audit.toml.")).toBeVisible();
 });
 
-test("@claim:demo-sandbox resets sample changes and sends no third-party requests", async ({ page }) => {
+async function demoStorageSnapshot(page: import("@playwright/test").Page) {
+  return page.evaluate(async () => {
+    const databases = "databases" in indexedDB ? await indexedDB.databases() : [];
+    const cacheNames = typeof caches === "undefined" ? [] : await caches.keys();
+    const opfsEntries: string[] = [];
+    const storageWithDirectory = navigator.storage as StorageManager & {
+      getDirectory?: () => Promise<FileSystemDirectoryHandle>;
+    };
+
+    if (storageWithDirectory.getDirectory) {
+      const root = await storageWithDirectory.getDirectory();
+      for await (const [name] of root.entries()) opfsEntries.push(name);
+    }
+
+    return {
+      localStorageKeys: Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)),
+      sessionStorageKeys: Array.from({ length: sessionStorage.length }, (_, index) => sessionStorage.key(index)),
+      indexedDb: databases.map(database => ({ name: database.name ?? null, version: database.version ?? null })),
+      cacheNames,
+      opfsEntries,
+    };
+  });
+}
+
+test("@claim:demo-sandbox keeps all browser storage empty, resets sample changes, and sends no third-party requests", async ({ page }) => {
   const external: string[] = [];
   page.on("request", request => { if (new URL(request.url()).origin !== "http://127.0.0.1:4173") external.push(request.url()); });
   await page.goto("/demo?demo=1");
   await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
+  expect(await demoStorageSnapshot(page)).toEqual({
+    localStorageKeys: [], sessionStorageKeys: [], indexedDb: [], cacheNames: [], opfsEntries: [],
+  });
   await page.getByRole("button", { name: "Show the corrected config" }).click();
   await expect(page.getByRole("heading", { name: "Corrected handoff-audit.toml" })).toBeVisible();
   await expect(page.getByText("The CLI does not make this edit.")).toBeVisible();
-  expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
+  expect(await demoStorageSnapshot(page)).toEqual({
+    localStorageKeys: [], sessionStorageKeys: [], indexedDb: [], cacheNames: [], opfsEntries: [],
+  });
+  await page.getByRole("button", { name: "Reset demo" }).click();
+  await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
+  expect(await demoStorageSnapshot(page)).toEqual({
+    localStorageKeys: [], sessionStorageKeys: [], indexedDb: [], cacheNames: [], opfsEntries: [],
+  });
   await page.reload();
   await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
+  expect(await demoStorageSnapshot(page)).toEqual({
+    localStorageKeys: [], sessionStorageKeys: [], indexedDb: [], cacheNames: [], opfsEntries: [],
+  });
   expect(external).toEqual([]);
 });

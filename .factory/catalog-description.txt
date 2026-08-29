@@ -1,1 +1,1 @@
-Check API handoff gaps before a teammate inherits the repository.
+Check API handoff gaps before a teammate inherits a repository.
