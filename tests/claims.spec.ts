@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import { mkdtemp, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { promisify } from "node:util";
 
 const exec = promisify(execFile);
@@ -74,6 +74,7 @@ test("@claim:package-install installs one packaged CLI with help, version, and J
   await exec("cargo", ["package", "--allow-dirty", "--quiet"], { cwd: process.cwd() });
   await exec("tar", ["-xzf", join(process.cwd(), "target/package/api-handoff-audit-0.1.0.crate"), "-C", consumer]);
   await exec("cargo", ["install", "--path", join(consumer, "api-handoff-audit-0.1.0"), "--root", installRoot, "--quiet"]);
+  expect((await readdir(join(installRoot, "bin"))).sort()).toEqual(["api-handoff-audit"]);
   const command = join(installRoot, "bin", "api-handoff-audit");
   const { stdout: help } = await exec(command, ["--help"]);
   const { stdout: version } = await exec(command, ["--version"]);
@@ -324,7 +325,42 @@ test("@claim:cli-demo-isolation creates its report in a new temporary directory"
   expect(reportPath!.startsWith(tmpdir())).toBe(true);
   expect((await stat(reportPath!)).isFile()).toBe(true);
   expect(await readFile(reportPath!, "utf8")).toContain("Parcel Lane API");
+  const demoRoot = dirname(reportPath!);
+  for (const file of ["handoff-audit.toml", "requests/create-order.http", "requests/health.bru", "fixtures/order.json"]) {
+    expect(await readFile(join(demoRoot, file), "utf8")).toBe(await readFile(join(process.cwd(), "examples/parcel-lane", file), "utf8"));
+  }
   expect(await readdir(root, { recursive: true })).toEqual(before);
+});
+
+test("@claim:env-file reads chosen values without reporting their contents", async () => {
+  const root = await cleanProject("GET {{BASE_URL}}/health\nAuthorization: Bearer {{AUDIT_ENV_FILE_TOKEN}}\n");
+  const envFile = join(root, ".env.handoff");
+  const sentinel = "env-file-value-must-not-appear";
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Environment file sample'
+setup_steps=['Run the server']
+[[variables]]
+name='AUDIT_ENV_FILE_TOKEN'
+required=true
+secret=true
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  await writeFile(envFile, `AUDIT_ENV_FILE_TOKEN=${sentinel}\n`);
+  const jsonResult = await cli(["audit", root, "--env-file", envFile, "--json"]);
+  expect(jsonResult.code).toBe(0);
+  expect(JSON.parse(jsonResult.stdout).variables).toEqual(expect.arrayContaining([
+    expect.objectContaining({ name: "AUDIT_ENV_FILE_TOKEN", state: "set", secret: true }),
+  ]));
+  expect(jsonResult.stdout).not.toContain(sentinel);
+  const terminalResult = await cli(["audit", root, "--env-file", envFile]);
+  expect(terminalResult.code).toBe(0);
+  expect(terminalResult.stdout).not.toContain(sentinel);
+  const htmlOutput = join(root, "report.html");
+  const htmlResult = await cli(["audit", root, "--env-file", envFile, "--format", "html", "--output", htmlOutput]);
+  expect(htmlResult.code).toBe(0);
+  expect(await readFile(htmlOutput, "utf8")).not.toContain(sentinel);
 });
 
 test("@claim:sample-report-content matches the CLI sample counts, finding, file, and next step in the browser demo", async ({ page }) => {

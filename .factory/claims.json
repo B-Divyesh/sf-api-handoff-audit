@@ -28,6 +28,13 @@
     "sandbox": "fresh temporary repository with HTTP and HTTPS proxies pointed at a loopback request counter"
   },
   {
+    "id": "env-file",
+    "claim": "Reads NAME=value values from a chosen --env-file and reports their names and states without their values",
+    "where": "privacy page and README",
+    "test": "npm run test:e2e -- --grep @claim:env-file",
+    "sandbox": "fresh temporary repository and environment file with a sentinel secret"
+  },
+  {
     "id": "redacted-reports",
     "claim": "Terminal, JSON, and HTML reports hide supplied variable values and response bodies",
     "where": "landing facts, product preview, and README",

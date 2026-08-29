@@ -53,12 +53,12 @@ function home(): string {
     </div>
   </section>
   <section class="preview" aria-labelledby="preview-title"><div class="section-label"><span>Sample CLI output</span><h2 id="preview-title">Sample audit finding</h2><p>The bundled repository contains a request that uses an undocumented variable.</p></div>${terminal()}</section>
-  <section id="how" class="steps" aria-labelledby="how-title"><p class="eyebrow">Three checks, one report</p><h2 id="how-title">How the handoff audit works</h2><ol>
+  <section id="how" class="steps" aria-labelledby="how-title"><p class="eyebrow">Three steps</p><h2 id="how-title">How the handoff audit works</h2><ol>
     <li><span>01</span><div><h3>Scan the repository</h3><p>Point the CLI at Bruno, Postman, or <code>.http</code> files in Git.</p></div></li>
     <li><span>02</span><div><h3>Name one smoke request</h3><p>Choose a configured local or staging target. The CLI sends only that request.</p></div></li>
     <li><span>03</span><div><h3>Share the redacted report</h3><p>Write terminal, JSON, or HTML output without variable values or response bodies.</p></div></li>
   </ol></section>
-  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the audit does not do</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p></div></section>
+  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the audit does not do</p><h2 id="boundaries-title">Where repository data goes</h2></div><div><p>The audit reads local text files. It has no telemetry.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p></div></section>
   `);
 }
 
@@ -80,7 +80,7 @@ required = true</pre><p>The CLI does not make this edit. This recorded rerun sho
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><p class="eyebrow">Effective 29 August 2026</p><h1>Your repository data stays local</h1><p class="lede">The CLI has no account, telemetry, or hosted workspace.</p><h2>What the CLI reads</h2><p>The audit reads supported text files inside the repository you name. It reads a chosen environment file when you pass <code>--env-file</code>.</p><h2>What a smoke run sends</h2><p>A smoke run sends one named request to the local or staging target you select. The CLI does not follow redirects.</p><h2>What reports contain</h2><p>Reports include variable names, file paths, status codes, and finding text. Reports exclude variable values and response bodies.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> for privacy questions.</p></article>`);
+  return shell(`<article class="legal"><p class="eyebrow">Effective 29 August 2026</p><h1>Audit locally; send smoke requests only to your target</h1><p class="lede">The CLI has no account or telemetry.</p><h2>What the CLI reads</h2><p>The audit reads supported text files inside the repository you name. It reads a chosen environment file when you pass <code>--env-file</code>.</p><h2>What a smoke run sends</h2><p>A smoke run sends one named request to the local or staging target you select. The CLI does not follow redirects.</p><h2>What reports contain</h2><p>Reports include variable names, file paths, status codes, and finding text. Reports exclude variable values and response bodies.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> for privacy questions.</p></article>`);
 }
 
 function terms(): string {
@@ -88,7 +88,7 @@ function terms(): string {
 }
 
 function notFound(): string {
-  return shell(`<section class="not-found"><p class="eyebrow">STALL CLOSED / 404</p><h1>This route has no request file</h1><p>The page may have moved, or the address has a typo.</p><a class="button primary route-link" href="/">Return to the audit</a></section>`);
+  return shell(`<section class="not-found"><p class="eyebrow">404 error</p><h1>Page not found</h1><p>The page may have moved, or the address has a typo.</p><a class="button primary route-link" href="/">Return to the audit</a></section>`);
 }
 
 function escapeHtml(value: string): string {

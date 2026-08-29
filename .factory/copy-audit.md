@@ -16,7 +16,10 @@ or uses a banned marketing word.
 | Sample CLI output | 3 | Pass — section name |
 | Sample audit finding | 3 | Pass — section name |
 | The bundled repository contains a request that uses an undocumented variable. | 10 | Pass — `sample-report-content` |
+| Three steps | 2 | Pass — workflow section label |
+| How the handoff audit works | 5 | Pass — section name |
 | What the audit does not do | 6 | Pass — section name |
+| Where repository data goes | 4 | Pass — section name |
 | The audit reads local text files. It has no telemetry. | 10 | Pass — `local-free-audit` |
 | A smoke run contacts only the target you select. It never follows a redirect. | 14 | Pass — `explicit-smoke` |
 

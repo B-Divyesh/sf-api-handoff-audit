@@ -80,6 +80,8 @@ api-handoff-audit audit . --format json --output handoff-report.json
 api-handoff-audit audit . --format html --output handoff-report.html
 ```
 
+Pass `--env-file` to read `NAME=value` entries from the file you choose. Reports show variable names and states, never those values.
+
 Run one named request against a configured target:
 
 ```sh

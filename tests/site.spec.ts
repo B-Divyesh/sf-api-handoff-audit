@@ -56,7 +56,7 @@ test("does not advertise a checkout", async ({ page }) => {
   await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
   await expect(page.getByText("$39", { exact: true })).toHaveCount(0);
   await page.goto("/ci-pack");
-  await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
 });
 
 for (const route of ["/", "/demo"]) {
@@ -130,7 +130,7 @@ test("direct route documents have their own social metadata before JavaScript ru
 
 test("direct not-found navigation has the complete accessible site shell", async ({ page }) => {
   await page.goto("/404");
-  await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to the audit" })).toBeVisible();
   await expect(page.locator("header.site-header")).toBeVisible();
   await expect(page.locator("footer")).toContainText("v0.1.0 · build 2026.08.29");
@@ -140,5 +140,5 @@ test("direct not-found navigation has the complete accessible site shell", async
 
 test("unknown routes show the designed in-app 404 page", async ({ page }) => {
   await page.goto("/missing-stall");
-  await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Page not found" })).toBeVisible();
 });
