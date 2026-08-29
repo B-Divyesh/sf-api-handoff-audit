@@ -1,70 +1,58 @@
-# API Handoff Audit — polish 1 handoff
+# API Handoff Audit — verification 5 handoff
 
-**Status: PASS**
-**Repair commits:** `3e9c281a70ff2e0afada5ee2842b02841c915555`, `87f8a81e2f785215ba74420d0215f91098cb1bda`
-**Deployed URL:** <https://api-handoff-audit.sociobot.in>
+**Status: PASS — release candidate accepted**
 
-This repair resolves every finding in `.factory/review-1.md`, including the
-two blockers, six major items, and eight minor copy/metadata items. The CLI
-remains a Rust clap binary; the companion is still a static Vite site.
+**Candidate:** `96e988c3c51b72684f1bbb8e5b3adb531b7517ed`
 
-## What changed
+**Live URL:** <https://api-handoff-audit.sociobot.in>
 
-- The one-click sample path is `/demo?demo=1` and `?demo=1` also enters it
-  directly. Its sticky mobile banner includes Reset demo and Start for real.
-- The sample no longer pretends to edit a repository. It shows the exact
-  `WAREHOUSE_ID` configuration change and labels the successful output as a
-  recorded rerun after that user-made edit.
-- Added claim-owned sample parity and build-output tests, removed unsupported
-  README/scope assertions, and rewrote the first screen in plain language.
-- Added static direct-route documents for Demo, Privacy, and Terms so their
-  initial Open Graph/Twitter metadata is route-specific. The real 404 remains
-  a full product-shell page.
-- Preserved the repository-night-market identity, self-hosted assets, CSP,
-  and static deployment class.
+**Verified:** 2026-08-29 UTC
 
-## Verification
+Independent verification is recorded in `.factory/verification-5.md`. No
+product code was changed.
 
-- Fresh clone: `npm ci`, then every one of the 13 commands in
-  `.factory/claims.json` was run independently; all passed. This includes the
-  packaged-consumer install (1.5 min) and clean build-artifact claim (1.5 min).
-- Local: `npm test` passed — TypeScript check, 8 Rust tests, 1 Vitest test,
-  and 30 Playwright tests in 1.7 min. `npm run build` produced the release
-  binary and `dist/site/`.
-- Package quality: `cargo fmt --all -- --check`,
-  `cargo clippy --all-targets -- -D warnings`, and
-  `cargo package --allow-dirty` passed (16 files, 87.5 KiB / 25.9 KiB
-  compressed).
-- Production: `/opt/fleet/lib/verify-url.sh` passed for `/` and `/demo?demo=1`.
-  Screenshots: `.factory/evidence/polish-1/home/screenshot-desktop.png`,
-  `.factory/evidence/polish-1/home/screenshot-mobile.png`,
-  `.factory/evidence/polish-1/demo/screenshot-desktop.png`, and
-  `.factory/evidence/polish-1/demo/screenshot-mobile.png`.
-- Final deployed-tree cold check also passed at
-  `.factory/evidence/polish-1/final/screenshot-desktop.png` and
-  `.factory/evidence/polish-1/final/screenshot-mobile.png`.
-- Production routes `/`, `/demo`, `/privacy`, and `/terms` returned 200;
-  `/missing-stall` returned HTTP 404. Mobile axe on those routes and the 404
-  found zero serious/critical issues. The demo request log contained only the
-  product origin.
-- Mobile Lighthouse at
-  `.factory/evidence/polish-1/lighthouse-mobile.json`: performance 100,
-  accessibility 100, FCP 0.8 s, LCP 1.3 s, TBT 0 ms, CLS 0. Initial JS/CSS
-  gzip sizes are 4,467 B and 4,150 B.
+## Verification summary
 
-## Run and deploy
+- The checkout began clean at the candidate commit. `npm ci` succeeded with no
+  audit vulnerabilities.
+- Every one of the 13 exact commands in `.factory/claims.json` passed
+  independently, including clean package installation and clean build output.
+- `npm test`, formatting, clippy with warnings denied, `npm run build`, and
+  `cargo package --allow-dirty` all passed.
+- A separate loopback end-to-end exercise proved the normal POST path,
+  redaction, status handling, timeout, redirect refusal, host boundary,
+  invalid input recovery, and exit codes.
+- The installed package exposes the CLI help/version/demo behavior; the
+  generated HTML report passes desktop/mobile and axe checks.
+- All 18 deployed artifacts match the fresh candidate build byte for byte.
+- Cold desktop and 390 px mobile checks pass first-read, one-click demo,
+  keyboard, focus, touch target, reduced-motion, route, 404, privacy request,
+  storage, console, and serious/critical axe gates.
+- Live security headers and immutable hashed-asset caching are correct.
+- Lighthouse mobile scores are 100 performance, 100 accessibility, 100 best
+  practices, and 100 SEO; LCP is 1.30 s and CLS is 0.
+
+Evidence screenshots, URL-verifier output, and Lighthouse JSON are under
+`.factory/evidence/verification-5/`.
+
+## Reproduce
 
 ```sh
 npm ci
 npm test
+cargo fmt --all -- --check
+cargo clippy --all-targets -- -D warnings
 npm run build
+cargo package --allow-dirty
 cargo run -- demo
 ```
 
-The static deployment work-order command is `npm ci && npm run build:site`;
-the deployable directory is `dist/site/`. The ready-to-publish CLI package is
-checked with `cargo package --allow-dirty`; publishing is not performed here.
+Deployable static output is `dist/site/`; the release CLI is
+`target/release/api-handoff-audit`.
 
-## Known gaps
+## Defects and known gaps
 
-None.
+No release-blocking, high, medium, or low product defects were found. The
+product has no backend, unlock endpoint, sign-in, or service worker, so the
+corresponding rate-limit, Entra, persistence/concurrency, and PWA checks do not
+apply.
