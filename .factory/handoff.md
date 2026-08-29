@@ -1,7 +1,7 @@
 # API Handoff Audit — polish 1 handoff
 
 **Status: PASS**
-**Repair commit:** `3e9c281a70ff2e0afada5ee2842b02841c915555`
+**Repair commits:** `3e9c281a70ff2e0afada5ee2842b02841c915555`, `87f8a81e2f785215ba74420d0215f91098cb1bda`
 **Deployed URL:** <https://api-handoff-audit.sociobot.in>
 
 This repair resolves every finding in `.factory/review-1.md`, including the
@@ -40,6 +40,9 @@ remains a Rust clap binary; the companion is still a static Vite site.
   `.factory/evidence/polish-1/home/screenshot-mobile.png`,
   `.factory/evidence/polish-1/demo/screenshot-desktop.png`, and
   `.factory/evidence/polish-1/demo/screenshot-mobile.png`.
+- Final deployed-tree cold check also passed at
+  `.factory/evidence/polish-1/final/screenshot-desktop.png` and
+  `.factory/evidence/polish-1/final/screenshot-mobile.png`.
 - Production routes `/`, `/demo`, `/privacy`, and `/terms` returned 200;
   `/missing-stall` returned HTTP 404. Mobile axe on those routes and the 404
   found zero serious/critical issues. The demo request log contained only the

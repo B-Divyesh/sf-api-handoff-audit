@@ -1,7 +1,7 @@
 # Polish 1 — finding resolution map
 
 **Base review:** `.factory/review-1.md` (`274dc684f5acf47e568de7a1857d59c02ed19640`)
-**Repair:** `3e9c281a70ff2e0afada5ee2842b02841c915555`
+**Repair commits:** `3e9c281a70ff2e0afada5ee2842b02841c915555`, `87f8a81e2f785215ba74420d0215f91098cb1bda`
 **Live:** <https://api-handoff-audit.sociobot.in>
 
 | Finding | Change made | Evidence |
