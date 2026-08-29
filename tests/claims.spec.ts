@@ -27,6 +27,9 @@ test("@claim:repo-gaps finds the sample repository's undocumented variable", asy
 });
 
 test("a clean packaged consumer can parse demo --json stdout", async () => {
+  // A packaged consumer compiles the release binary outside this workspace.
+  // Keep that real install regression independent from Playwright's UI budget.
+  test.setTimeout(180_000);
   const consumer = await mkdtemp(join(tmpdir(), "handoff-consumer-"));
   const installRoot = join(consumer, "install");
   await exec("cargo", ["package", "--allow-dirty", "--quiet"], { cwd: process.cwd() });
@@ -87,7 +90,7 @@ request='two.http'
   expect(JSON.parse(await readFile(reportOutput, "utf8"))).toEqual(report);
 });
 
-test("@claim:redacted-reports excludes supplied values from terminal, JSON, and HTML reports", async () => {
+test("@claim:redacted-reports excludes supplied values and response bodies from terminal, JSON, and HTML reports", async () => {
   const root = await cleanProject("GET {{BASE_URL}}/health\nAuthorization: Bearer {{API_TOKEN}}\n");
   await writeFile(join(root, "handoff-audit.toml"), `version=1
 project='Secret sample'
@@ -104,6 +107,34 @@ request='requests/health.http'
     const output = join(root, `report.${format}`);
     await exec(binary, ["audit", root, "--format", format, "--output", output], { env });
     expect(await readFile(output, "utf8")).not.toContain("do-not-print-this-value");
+  }
+
+  const bodySentinel = "response-body-must-never-appear";
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { "content-type": "text/plain" }).end(bodySentinel);
+  });
+  await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
+  const port = (server.address() as { port: number }).port;
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Secret sample'
+setup_steps=['Run the server']
+[targets.local]
+base_url='http://127.0.0.1:${port}'
+[[variables]]
+name='API_TOKEN'
+secret=true
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  try {
+    for (const format of ["terminal", "json", "html"]) {
+      const output = join(root, `smoke-report.${format}`);
+      await exec(binary, ["run", root, "--target", "local", "--smoke", "health", "--format", format, "--output", output], { env });
+      expect(await readFile(output, "utf8")).not.toContain(bodySentinel);
+    }
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
   }
 });
 
@@ -132,7 +163,10 @@ name='other'
 request='requests/other.http'
 `);
   const { stdout } = await exec(binary, ["run", root, "--target", "local", "--smoke", "health", "--json"]);
-  target.close(); destination.close();
+  await Promise.all([
+    new Promise<void>(resolve => target.close(() => resolve())),
+    new Promise<void>(resolve => destination.close(() => resolve())),
+  ]);
   const report = JSON.parse(stdout);
   expect(report.smoke_result.status).toBe("PASS");
   expect(requested).toBe(1);
@@ -150,28 +184,4 @@ test("@claim:demo-sandbox resets sample changes and sends no third-party request
   await page.reload();
   await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
   expect(external).toEqual([]);
-});
-
-test("@claim:ci-pack verifies a license before revealing the paid workflow", async ({ page }) => {
-  await page.route("https://api.sociobot.in/api/v1/products/api-handoff-audit/verify?license=test-license", route => route.fulfill({ json: { valid: true, reason: "ok", expires_at: null } }));
-  await page.goto("/ci-pack");
-  await expect(page.getByText("$39")).toBeVisible();
-  await page.getByLabel("License token").fill("test-license");
-  await page.getByRole("button", { name: "Verify license" }).click();
-  await expect(page.getByRole("heading", { name: "CI Pack is active" })).toBeVisible();
-  await expect(page.getByText("actions/checkout@v4")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Bruno repository preset" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Postman repository preset" })).toBeVisible();
-});
-
-test("@claim:license-cache reuses a fresh license verdict without another request", async ({ page }) => {
-  let calls = 0;
-  await page.route("https://api.sociobot.in/**", route => { calls += 1; return route.fulfill({ json: { valid: true } }); });
-  await page.addInitScript(() => {
-    localStorage.setItem("sb_license:api-handoff-audit", "cached-license");
-    localStorage.setItem("sb_license_verdict:api-handoff-audit", JSON.stringify({ valid: true, checkedAt: Date.now() }));
-  });
-  await page.goto("/ci-pack");
-  await expect(page.getByRole("heading", { name: "CI Pack is active" })).toBeVisible();
-  expect(calls).toBe(0);
 });

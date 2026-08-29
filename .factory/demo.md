@@ -10,4 +10,4 @@ The sample has two setup steps, one fixture, two named smoke requests, one suppl
 
 Open `https://api-handoff-audit.sociobot.in/demo` or `/demo` locally. It renders the CLI's recorded sample result. “Mark documented” changes only in-memory page state. “Reset demo” returns the finding. Reloading also resets it.
 
-The browser demo does not use localStorage, IndexedDB, or OPFS. Its storage namespace is therefore empty. License storage uses separate `sb_license:api-handoff-audit` keys and is never touched by the demo.
+The browser demo does not use localStorage, IndexedDB, or OPFS. Its storage namespace is therefore empty.

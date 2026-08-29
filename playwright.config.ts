@@ -3,7 +3,8 @@ import { defineConfig, devices } from "@playwright/test";
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: false,
-  timeout: 30_000,
+  // The packaged-consumer check intentionally performs a fresh release build.
+  timeout: 120_000,
   expect: { timeout: 5_000 },
   reporter: [["list"], ["html", { outputFolder: "playwright-report", open: "never" }]],
   use: {

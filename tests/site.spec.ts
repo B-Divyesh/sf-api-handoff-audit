@@ -3,7 +3,7 @@ import AxeBuilder from "@axe-core/playwright";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const routes = ["/", "/demo", "/ci-pack", "/privacy", "/terms", "/404"];
+const routes = ["/", "/demo", "/privacy", "/terms", "/404"];
 
 for (const route of routes) {
   test(`${route} has one clear page heading and no serious accessibility issues`, async ({ page }) => {
@@ -35,6 +35,28 @@ test("the first screen fits a 390px phone without horizontal scroll", async ({ p
   await expect(page.getByRole("link", { name: "Try it with sample data" })).toBeVisible();
   const width = await page.evaluate(() => ({ body: document.body.scrollWidth, view: document.documentElement.clientWidth }));
   expect(width.body).toBeLessThanOrEqual(width.view);
+});
+
+test("mobile header, footer, demo, and terminal controls have 44px hit areas", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const route of ["/", "/demo", "/privacy", "/terms"]) {
+    await page.goto(route);
+    const targets = page.locator(".site-header a, footer a, .terminal-bar button, .demo-banner a, .demo-banner button, .legal a");
+    for (let index = 0; index < await targets.count(); index += 1) {
+      const box = await targets.nth(index).boundingBox();
+      if (!box) continue;
+      expect(box!.width).toBeGreaterThanOrEqual(44);
+      expect(box!.height).toBeGreaterThanOrEqual(44);
+    }
+  }
+});
+
+test("does not advertise an unavailable CI Pack checkout", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
+  await expect(page.getByText("$39", { exact: true })).toHaveCount(0);
+  await page.goto("/ci-pack");
+  await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
 });
 
 for (const route of ["/", "/demo"]) {

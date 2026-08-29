@@ -22,10 +22,10 @@
   },
   {
     "id": "redacted-reports",
-    "claim": "Terminal, JSON, and HTML reports hide supplied variable values",
+    "claim": "Terminal, JSON, and HTML reports hide supplied variable values and response bodies",
     "where": "landing facts, product preview, and README",
     "test": "npm run test:e2e -- --grep @claim:redacted-reports",
-    "sandbox": "fresh temporary repository with a known sentinel secret"
+    "sandbox": "fresh temporary repository with a known sentinel secret and a loopback response-body sentinel"
   },
   {
     "id": "explicit-smoke",
@@ -40,19 +40,5 @@
     "where": "demo banner",
     "test": "npm run test:e2e -- --grep @claim:demo-sandbox",
     "sandbox": "fresh browser context on /demo with request interception"
-  },
-  {
-    "id": "ci-pack",
-    "claim": "A valid $39 one-time CI Pack license reveals the workflow and two policy presets",
-    "where": "paid section and /ci-pack",
-    "test": "npm run test:e2e -- --grep @claim:ci-pack",
-    "sandbox": "fresh browser context with a recorded valid verify response"
-  },
-  {
-    "id": "license-cache",
-    "claim": "The site reuses a fresh license verdict for one day",
-    "where": "privacy page",
-    "test": "npm run test:e2e -- --grep @claim:license-cache",
-    "sandbox": "fresh browser context with a current cached verdict and intercepted license endpoint"
   }
 ]

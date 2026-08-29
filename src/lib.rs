@@ -106,6 +106,8 @@ pub struct SmokeResult {
     pub request_file: String,
     pub expected_status: Vec<u16>,
     pub actual_status: Option<u16>,
+    /// A stable, human-readable result for JSON consumers.
+    pub status: String,
     pub passed: bool,
     pub detail: String,
 }
@@ -603,6 +605,7 @@ pub fn run_smoke(
         request_file: smoke.request.clone(),
         expected_status: smoke.expect_status.clone(),
         actual_status: status,
+        status: if passed { "PASS" } else { "FAIL" }.into(),
         passed,
         detail,
     })
@@ -911,6 +914,7 @@ mod tests {
             run_smoke(dir.path(), &config, &BTreeMap::new(), "local", "health", 2).unwrap();
         server.join().unwrap();
         assert!(result.passed);
+        assert_eq!(result.status, "PASS");
         assert_eq!(result.actual_status, Some(204));
     }
 }

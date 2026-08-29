@@ -2,9 +2,9 @@
 
 Check an API repository before a teammate inherits it.
 
-API Handoff Audit is a small Rust CLI for teams that keep API requests in Git. It finds missing variables, undocumented setup, and absent fixtures. It can run only the smoke requests you name against configured local or staging targets. Its terminal, JSON, and HTML reports never include variable values.
+API Handoff Audit is a small Rust CLI for teams that keep API requests in Git. It finds missing variables, undocumented setup, and absent fixtures. It can run only the smoke requests you name against configured local or staging targets. Its terminal, JSON, and HTML reports never include variable values or response bodies.
 
-The free CLI performs the full local audit and smoke run. A $39 one-time CI Pack adds policy presets and a GitHub Actions starter from the product site. The purchase is optional.
+The free CLI performs the full local audit and smoke run. The product does not offer a paid checkout at this time.
 
 ## Try the bundled project
 

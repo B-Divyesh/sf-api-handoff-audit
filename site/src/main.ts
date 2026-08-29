@@ -1,19 +1,17 @@
 import "./style.css";
-import { ciPresets, ciWorkflow, sampleFindings, terminalLines } from "./data";
-import { cachedUnlock, cachedVerdict, captureLicense, savePastedLicense, verifyLicense } from "./license";
+import { sampleFindings, terminalLines } from "./data";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 const routeStatus = document.querySelector<HTMLDivElement>("#route-status")!;
 const product = "API Handoff Audit";
 
-type Route = "/" | "/demo" | "/privacy" | "/terms" | "/ci-pack" | "/404";
+type Route = "/" | "/demo" | "/privacy" | "/terms" | "/404";
 
 const meta: Record<Route, { title: string; description: string }> = {
   "/": { title: "API Handoff Audit — check a repository handoff", description: "Find missing API variables and setup gaps, run named smoke requests, and share a redacted handoff report." },
   "/demo": { title: "Demo — API Handoff Audit", description: "Inspect the bundled Parcel Lane API handoff report." },
-  "/privacy": { title: "Privacy — API Handoff Audit", description: "How API Handoff Audit handles repository data and licenses." },
-  "/terms": { title: "Terms — API Handoff Audit", description: "Terms for using API Handoff Audit and its optional CI Pack." },
-  "/ci-pack": { title: "CI Pack — API Handoff Audit", description: "Verify a CI Pack license and copy the audit workflow." },
+  "/privacy": { title: "Privacy — API Handoff Audit", description: "How API Handoff Audit handles repository data." },
+  "/terms": { title: "Terms — API Handoff Audit", description: "Terms for using API Handoff Audit." },
   "/404": { title: "Page not found — API Handoff Audit", description: "Return to API Handoff Audit." },
 };
 
@@ -24,7 +22,6 @@ function shell(content: string, demo = false): string {
       <nav aria-label="Main navigation">
         <a class="route-link" href="/demo">Demo</a>
         <a href="/#how">How it works</a>
-        <a class="route-link" href="/ci-pack">CI Pack</a>
         <a class="route-link" href="/privacy">Privacy</a>
       </nav>
     </header>
@@ -32,7 +29,7 @@ function shell(content: string, demo = false): string {
     <footer>
       <div><b>${product}</b><p>Check an API repository before a teammate inherits it.</p></div>
       <div class="footer-links"><a class="route-link" href="/privacy">Privacy</a><a class="route-link" href="/terms">Terms</a><a href="https://hello-factory.sociobot.in" rel="external">Built by Param Factory <span class="sr-only">(external)</span></a></div>
-      <p class="build">v0.1.0 · build 2026.08.28</p>
+      <p class="build">v0.1.0 · build 2026.08.29</p>
     </footer>`;
 }
 
@@ -62,11 +59,7 @@ function home(): string {
     <li><span>03</span><div><h3>Share the redacted report</h3><p>Write terminal, JSON, or HTML output without variable values or response bodies.</p></div></li>
   </ol></section>
   <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">A checker, not another client</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry and no hosted workspace.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p><p>It does not design APIs, edit requests, or store credentials.</p></div></section>
-  ${paidSection()}`);
-}
-
-function paidSection(): string {
-  return `<section class="paid" aria-labelledby="paid-title"><div class="price"><span>CI PACK</span><strong>$39</strong><small>one-time purchase</small></div><div><h2 id="paid-title">Add the handoff check to pull requests</h2><p>The free CLI includes every local audit and report format.</p><p>The CI Pack adds two policy presets and a GitHub Actions starter.</p><div class="button-row"><a class="button buy" href="https://api.sociobot.in/api/v1/products/api-handoff-audit/checkout">Buy the CI Pack <span class="sr-only">through Sociobot checkout</span></a><a class="text-link route-link" href="/ci-pack">Restore a license</a></div><small>Sociobot is the merchant of record. Refunds are handled there.</small></div></section>`;
+  `);
 }
 
 let demoResolved = false;
@@ -83,22 +76,11 @@ function demo(): string {
 }
 
 function privacy(): string {
-  return shell(`<article class="legal"><p class="eyebrow">Effective 28 August 2026</p><h1>Your repository data stays local</h1><p class="lede">The CLI has no account, telemetry, or hosted workspace.</p><h2>What the CLI reads</h2><p>The audit reads supported text files inside the repository you name. It reads a chosen environment file when you pass <code>--env-file</code>.</p><h2>What a smoke run sends</h2><p>A smoke run sends one named request to the local or staging target you select. The CLI does not follow redirects.</p><h2>What reports contain</h2><p>Reports include variable names, file paths, status codes, and finding text. Reports exclude variable values and response bodies.</p><h2>License checks</h2><p>The site stores a CI Pack license and its last verdict in your browser. Verification sends that token to <code>api.sociobot.in</code> at most once each day.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> for privacy questions.</p></article>`);
+  return shell(`<article class="legal"><p class="eyebrow">Effective 29 August 2026</p><h1>Your repository data stays local</h1><p class="lede">The CLI has no account, telemetry, or hosted workspace.</p><h2>What the CLI reads</h2><p>The audit reads supported text files inside the repository you name. It reads a chosen environment file when you pass <code>--env-file</code>.</p><h2>What a smoke run sends</h2><p>A smoke run sends one named request to the local or staging target you select. The CLI does not follow redirects.</p><h2>What reports contain</h2><p>Reports include variable names, file paths, status codes, and finding text. Reports exclude variable values and response bodies.</p><h2>Contact</h2><p>Email <a href="mailto:privacy@sociobot.in">privacy@sociobot.in</a> for privacy questions.</p></article>`);
 }
 
 function terms(): string {
-  return shell(`<article class="legal"><p class="eyebrow">Effective 28 August 2026</p><h1>Use the audit with systems you control</h1><p class="lede">These terms cover the free CLI and the optional CI Pack.</p><h2>License</h2><p>The CLI source is available under the MIT License. You remain responsible for repository and target access.</p><h2>CI Pack purchase</h2><p>The CI Pack costs $39 as a one-time purchase. It includes two policy presets and a GitHub Actions starter.</p><h2>Payments and refunds</h2><p>Sociobot is the merchant of record. A refund revokes the related license.</p><h2>Limits</h2><p>The software is provided without warranty. Do not use it against a target you do not control or have permission to test.</p><h2>Contact</h2><p>Email <a href="mailto:support@sociobot.in">support@sociobot.in</a> for purchase help.</p></article>`);
-}
-
-function ciPack(): string {
-  const unlocked = cachedUnlock();
-  return shell(`<section class="page-heading"><p class="eyebrow">Optional paid add-on</p><h1>Add handoff checks to pull requests</h1><p>The CI Pack costs $39 once. The free CLI remains complete.</p></section>
-    <section class="license-panel" aria-labelledby="license-title"><div><h2 id="license-title">${unlocked ? "CI Pack is active" : "Verify your CI Pack license"}</h2><p>${unlocked ? "Copy the workflow below into your repository." : "Paste the license from your purchase email. Verification uses Sociobot."}</p></div>
-      <form id="license-form"><label for="license">License token</label><div><input id="license" name="license" autocomplete="off" spellcheck="false" required><button type="submit">Verify license</button></div><p id="license-status" role="status"></p></form>
-      <a class="button buy" href="https://api.sociobot.in/api/v1/products/api-handoff-audit/checkout">Buy the CI Pack</a>
-    </section>
-    <section class="workflow ${unlocked ? "" : "locked"}" aria-labelledby="workflow-title"><div><h2 id="workflow-title">GitHub Actions starter</h2><p>${unlocked ? "Your workflow is ready to copy." : "Verify a license to reveal this workflow and two policy presets."}</p></div>${unlocked ? `<button data-copy-workflow>Copy workflow</button><pre tabindex="0" aria-label="GitHub Actions starter workflow"><code>${escapeHtml(ciWorkflow)}</code></pre><div class="policy-presets"><h2>Policy presets</h2>${ciPresets.map((preset, index) => `<article><h3>${preset.name}</h3><button data-copy-preset="${index}">Copy preset</button><pre tabindex="0" aria-label="${escapeHtml(preset.name)} policy preset"><code>${escapeHtml(preset.text)}</code></pre></article>`).join("")}</div>` : `<div class="lock-mark" aria-hidden="true">×</div>`}</section>
-    <p class="fine-print">License data stays in this browser. See <a class="route-link" href="/privacy">Privacy</a> and <a class="route-link" href="/terms">Terms</a>.</p>`);
+  return shell(`<article class="legal"><p class="eyebrow">Effective 29 August 2026</p><h1>Use the audit with systems you control</h1><p class="lede">These terms cover the free API Handoff Audit CLI.</p><h2>License</h2><p>The CLI source is available under the MIT License. You remain responsible for repository and target access.</p><h2>Limits</h2><p>The software is provided without warranty. Do not use it against a target you do not control or have permission to test.</p><h2>Contact</h2><p>Email <a href="mailto:support@sociobot.in">support@sociobot.in</a> for support.</p></article>`);
 }
 
 function notFound(): string {
@@ -111,12 +93,12 @@ function escapeHtml(value: string): string {
 
 function currentRoute(): Route {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  return (["/", "/demo", "/privacy", "/terms", "/ci-pack", "/404"] as Route[]).includes(path as Route) ? path as Route : "/404";
+  return (["/", "/demo", "/privacy", "/terms", "/404"] as Route[]).includes(path as Route) ? path as Route : "/404";
 }
 
 function render(focus = false): void {
   const route = currentRoute();
-  const renderers: Record<Route, () => string> = { "/": home, "/demo": demo, "/privacy": privacy, "/terms": terms, "/ci-pack": ciPack, "/404": notFound };
+  const renderers: Record<Route, () => string> = { "/": home, "/demo": demo, "/privacy": privacy, "/terms": terms, "/404": notFound };
   app.innerHTML = renderers[route]();
   document.title = meta[route].title;
   document.querySelector<HTMLMetaElement>('meta[name="description"]')!.content = meta[route].description;
@@ -150,35 +132,8 @@ function bindActions(): void {
   }));
   document.querySelector<HTMLButtonElement>("[data-resolve]")?.addEventListener("click", () => { demoResolved = true; render(false); document.querySelector<HTMLElement>("#audit-state")?.focus(); });
   document.querySelector<HTMLButtonElement>("[data-reset-demo]")?.addEventListener("click", () => { demoResolved = false; render(false); document.querySelector<HTMLElement>("#audit-state")?.focus(); });
-  document.querySelector<HTMLButtonElement>("[data-copy-workflow]")?.addEventListener("click", async event => {
-    await navigator.clipboard.writeText(ciWorkflow);
-    (event.currentTarget as HTMLButtonElement).textContent = "Workflow copied";
-  });
-  document.querySelectorAll<HTMLButtonElement>("[data-copy-preset]").forEach(button => button.addEventListener("click", async () => {
-    await navigator.clipboard.writeText(ciPresets[Number(button.dataset.copyPreset)].text);
-    button.textContent = "Preset copied";
-  }));
-  document.querySelector<HTMLFormElement>("#license-form")?.addEventListener("submit", async event => {
-    event.preventDefault();
-    const input = document.querySelector<HTMLInputElement>("#license")!;
-    const status = document.querySelector<HTMLParagraphElement>("#license-status")!;
-    if (!input.value.trim()) { status.textContent = "Enter the license from your purchase email."; return; }
-    status.textContent = "Checking the license…";
-    savePastedLicense(input.value);
-    try {
-      const valid = await verifyLicense(input.value.trim());
-      if (valid) render(false);
-      else status.innerHTML = `This license is not active. <a href="https://api.sociobot.in/api/v1/products/api-handoff-audit/checkout">Buy the CI Pack</a>.`;
-    } catch {
-      status.textContent = "The license service did not answer. Check your connection and try again.";
-    }
-  });
 }
 
 window.addEventListener("popstate", () => render(true));
 
-const returnedToken = captureLicense();
-if (returnedToken && cachedVerdict() === null) {
-  verifyLicense(returnedToken).then(() => { if (currentRoute() === "/ci-pack") render(false); }).catch(() => undefined);
-}
 render(false);

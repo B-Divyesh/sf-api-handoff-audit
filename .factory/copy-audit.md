@@ -7,7 +7,6 @@ Checked on 28 August 2026. Word counts treat hyphenated terms, paths, and CLI fl
 | API Handoff Audit | 3 | Pass |
 | Demo | 1 | Pass |
 | How it works | 3 | Pass |
-| CI Pack | 2 | Pass |
 | Privacy | 1 | Pass |
 | A preflight check for API repositories | 6 | Pass |
 | Check an API handoff before it stalls | 7 | Pass |
@@ -42,14 +41,6 @@ Checked on 28 August 2026. Word counts treat hyphenated terms, paths, and CLI fl
 | A smoke run contacts only the target you select. | 9 | Pass |
 | It never follows a redirect. | 5 | Pass |
 | It does not design APIs, edit requests, or store credentials. | 10 | Pass |
-| $39 one-time purchase | 3 | Pass |
-| Add the handoff check to pull requests | 7 | Pass |
-| The free CLI includes every local audit and report format. | 10 | Pass |
-| The CI Pack adds two policy presets and a GitHub Actions starter. | 12 | Pass |
-| Buy the CI Pack | 4 | Pass |
-| Restore a license | 3 | Pass |
-| Sociobot is the merchant of record. | 6 | Pass |
-| Refunds are handled there. | 4 | Pass |
 | Check an API repository before a teammate inherits it. | 9 | Pass |
 | Built by Param Factory | 4 | Pass |
 
@@ -66,7 +57,6 @@ Checked on 28 August 2026. Word counts treat hyphenated terms, paths, and CLI fl
 | The named destination | target |
 | A required input name | variable |
 | The generated result | report |
-| The paid add-on | CI Pack |
 | The included example | sample data |
 
 Catalog description: “Check an API repository before a teammate inherits it.” It starts with a verb and contains 54 characters.
