@@ -4,11 +4,18 @@
     "claim": "Finds undocumented variables and setup gaps before handoff",
     "where": "landing page and README",
     "test": "npm run test:e2e -- --grep @claim:repo-gaps",
-    "sandbox": "bundled Parcel Lane repository in a fresh temporary directory"
+    "sandbox": "fresh temporary repository with an undocumented variable and no setup_steps"
+  },
+  {
+    "id": "absent-fixtures",
+    "claim": "Finds absent fixtures before handoff",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:absent-fixtures",
+    "sandbox": "fresh temporary repository with a configured fixture path that does not exist"
   },
   {
     "id": "workspace-formats",
-    "claim": "Scans Bruno, Postman, and .http files for variable references",
+    "claim": "Scans Bruno, Postman, and .http files for {{NAME}}, ${NAME}, and $dotenv NAME variable references",
     "where": "landing page and README",
     "test": "npm run test:e2e -- --grep @claim:workspace-formats",
     "sandbox": "fresh temporary repository with one file of each supported type"
@@ -29,10 +36,38 @@
   },
   {
     "id": "explicit-smoke",
-    "claim": "Runs only the named smoke request and does not follow redirects",
+    "claim": "Runs only the named smoke request against the selected configured target and does not follow redirects",
     "where": "how it works, privacy page, and README",
     "test": "npm run test:e2e -- --grep @claim:explicit-smoke",
     "sandbox": "two fresh loopback HTTP servers and a temporary repository"
+  },
+  {
+    "id": "target-policy",
+    "claim": "Accepts HTTP or HTTPS local targets and requires HTTPS staging targets",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:target-policy",
+    "sandbox": "fresh temporary repositories with local and staging target configurations"
+  },
+  {
+    "id": "exit-codes",
+    "claim": "Uses exit code 0 for pass, 1 for audit findings or a failed smoke response, and 2 for invalid input or configuration; --json writes one JSON report to stdout",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:exit-codes",
+    "sandbox": "fresh temporary repositories for passing, finding, and invalid-input CLI runs"
+  },
+  {
+    "id": "cli-demo-isolation",
+    "claim": "The CLI demo copies bundled sample data to a new temporary directory, writes an HTML report there, prints its path, and does not write to your repository",
+    "where": "README and demo documentation",
+    "test": "npm run test:e2e -- --grep @claim:cli-demo-isolation",
+    "sandbox": "fresh temporary working repository and the bundled Parcel Lane sample"
+  },
+  {
+    "id": "package-install",
+    "claim": "The ready-to-publish package installs one api-handoff-audit binary with --help, version 0.1.0, and demo --json support",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:package-install",
+    "sandbox": "fresh extracted .crate and isolated cargo install root"
   },
   {
     "id": "demo-sandbox",

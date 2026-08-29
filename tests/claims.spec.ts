@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { execFile } from "node:child_process";
-import { mkdtemp, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,13 +20,52 @@ async function cleanProject(request = "GET {{BASE_URL}}/health\n") {
   return root;
 }
 
-test("@claim:repo-gaps finds the sample repository's undocumented variable", async () => {
-  const { stdout } = await exec(binary, ["demo"], { cwd: process.cwd() });
-  expect(stdout).toContain("WAREHOUSE_ID is used but not documented");
-  expect(stdout).toContain("requests/create-order.http");
+async function cli(args: string[], options: Parameters<typeof exec>[2] = {}) {
+  try {
+    const result = await exec(binary, args, options);
+    return { ...result, code: 0 };
+  } catch (error: unknown) {
+    const result = error as { stdout?: string; stderr?: string; code?: number };
+    return { stdout: result.stdout ?? "", stderr: result.stderr ?? "", code: result.code ?? -1 };
+  }
+}
+
+test("@claim:repo-gaps finds an undocumented variable and an undocumented setup gap", async () => {
+  const root = await cleanProject("GET {{BASE_URL}}/{{WAREHOUSE_ID}}/health\n");
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Gap sample'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const result = await cli(["audit", root, "--json"]);
+  expect(result.code).toBe(1);
+  const report = JSON.parse(result.stdout);
+  expect(report.findings).toEqual(expect.arrayContaining([
+    expect.objectContaining({ code: "SETUP001", message: "No setup steps are documented." }),
+    expect.objectContaining({ code: "VAR001", message: "WAREHOUSE_ID is used but not documented.", file: "requests/health.http" }),
+  ]));
 });
 
-test("a clean packaged consumer can parse demo --json stdout", async () => {
+test("@claim:absent-fixtures finds a configured fixture that is absent", async () => {
+  const root = await cleanProject();
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Fixture sample'
+setup_steps=['Run the server']
+[[fixtures]]
+path='fixtures/order.json'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const result = await cli(["audit", root, "--json"]);
+  expect(result.code).toBe(1);
+  expect(JSON.parse(result.stdout).findings).toEqual(expect.arrayContaining([
+    expect.objectContaining({ code: "FIX001", message: "Fixture fixtures/order.json is missing.", file: "fixtures/order.json" }),
+  ]));
+});
+
+test("@claim:package-install installs one packaged CLI with help, version, and JSON demo output", async () => {
   // A packaged consumer compiles the release binary outside this workspace.
   // Keep that real install regression independent from Playwright's UI budget.
   test.setTimeout(180_000);
@@ -36,7 +75,11 @@ test("a clean packaged consumer can parse demo --json stdout", async () => {
   await exec("tar", ["-xzf", join(process.cwd(), "target/package/api-handoff-audit-0.1.0.crate"), "-C", consumer]);
   await exec("cargo", ["install", "--path", join(consumer, "api-handoff-audit-0.1.0"), "--root", installRoot, "--quiet"]);
   const command = join(installRoot, "bin", "api-handoff-audit");
+  const { stdout: help } = await exec(command, ["--help"]);
+  const { stdout: version } = await exec(command, ["--version"]);
   const { stdout, stderr } = await exec(command, ["demo", "--json"]);
+  expect(help).toContain("Check an API repository before a teammate inherits it");
+  expect(version.trim()).toBe("api-handoff-audit 0.1.0");
   const report = JSON.parse(stdout);
   expect(report.project).toBe("Parcel Lane API");
   expect(stderr).toContain("HTML report:");
@@ -63,7 +106,7 @@ request='requests/health.http'
 
 test("@claim:workspace-formats scans Bruno, Postman, and .http variable references", async () => {
   const root = await mkdtemp(join(tmpdir(), "handoff-formats-"));
-  await writeFile(join(root, "one.bru"), "get {\n url: {{BASE_URL}}/{{BRUNO_ID}}\n}\n");
+  await writeFile(join(root, "one.bru"), "get {\n url: {{BASE_URL}}/{{BRUNO_ID}}\n}\n# $dotenv DOTENV_ID\n");
   await writeFile(join(root, "two.http"), "GET {{BASE_URL}}/${HTTP_ID}\n");
   await writeFile(join(root, "postman.json"), JSON.stringify({ info: { name: "Sample" }, url: "{{POSTMAN_ID}}" }));
   await writeFile(join(root, "handoff-audit.toml"), `version=1
@@ -78,6 +121,9 @@ required=false
 [[variables]]
 name='POSTMAN_ID'
 required=false
+[[variables]]
+name='DOTENV_ID'
+required=false
 [[smoke]]
 name='first'
 request='two.http'
@@ -86,7 +132,12 @@ request='two.http'
   const { stdout } = await exec(binary, ["audit", root, "--json", "--output", reportOutput]);
   const report = JSON.parse(stdout);
   expect(report.scanned_files).toBe(3);
-  expect(report.variables.every((item: { used_by: string[] }) => item.used_by.length === 1)).toBe(true);
+  expect(report.variables).toEqual(expect.arrayContaining([
+    expect.objectContaining({ name: "BRUNO_ID", used_by: ["one.bru"] }),
+    expect.objectContaining({ name: "HTTP_ID", used_by: ["two.http"] }),
+    expect.objectContaining({ name: "POSTMAN_ID", used_by: ["postman.json"] }),
+    expect.objectContaining({ name: "DOTENV_ID", used_by: ["one.bru"] }),
+  ]));
   expect(JSON.parse(await readFile(reportOutput, "utf8"))).toEqual(report);
 });
 
@@ -173,6 +224,102 @@ request='requests/other.http'
   expect(followed).toBe(0);
 });
 
+test("@claim:target-policy accepts HTTP local targets and rejects HTTP staging targets", async () => {
+  const root = await cleanProject();
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Target policy sample'
+setup_steps=['Run the server']
+[targets.local]
+base_url='http://127.0.0.1:9'
+[targets.staging]
+base_url='http://127.0.0.1:9'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const local = await cli(["run", root, "--target", "local", "--smoke", "health", "--json"]);
+  expect(local.code).toBe(1);
+  expect(JSON.parse(local.stdout).smoke_result).toMatchObject({ target: "local", status: "FAIL" });
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Target policy sample'
+setup_steps=['Run the server']
+[targets.local]
+base_url='https://127.0.0.1:9'
+[targets.staging]
+base_url='http://127.0.0.1:9'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const secureLocal = await cli(["run", root, "--target", "local", "--smoke", "health", "--json"]);
+  expect(secureLocal.code).toBe(1);
+  expect(JSON.parse(secureLocal.stdout).smoke_result).toMatchObject({ target: "local", status: "FAIL" });
+  const staging = await cli(["run", root, "--target", "staging", "--smoke", "health"]);
+  expect(staging.code).toBe(2);
+  expect(staging.stderr).toContain("The staging target must use https.");
+});
+
+test("@claim:exit-codes uses exact result codes and keeps --json stdout parseable", async () => {
+  const root = await cleanProject();
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Exit code sample'
+setup_steps=['Run the server']
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const passed = await cli(["audit", root, "--json"]);
+  expect(passed.code).toBe(0);
+  expect(JSON.parse(passed.stdout)).toMatchObject({ project: "Exit code sample", findings: [] });
+
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Exit code sample'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const findings = await cli(["audit", root]);
+  expect(findings.code).toBe(1);
+  expect(findings.stdout).toContain("SETUP001");
+
+  await writeFile(join(root, "handoff-audit.toml"), `version=1
+project='Exit code sample'
+setup_steps=['Run the server']
+[targets.local]
+base_url='http://127.0.0.1:9'
+[[smoke]]
+name='health'
+request='requests/health.http'
+`);
+  const failedSmoke = await cli(["run", root, "--target", "local", "--smoke", "health", "--json"]);
+  expect(failedSmoke.code).toBe(1);
+  expect(JSON.parse(failedSmoke.stdout).smoke_result).toMatchObject({ status: "FAIL" });
+
+  const invalid = await cli(["run", root]);
+  expect(invalid.code).toBe(2);
+  expect(invalid.stderr).toContain("--target");
+  expect(invalid.stderr).toContain("--smoke");
+
+  await writeFile(join(root, "handoff-audit.toml"), "version=2\nproject='Exit code sample'\n");
+  const invalidConfig = await cli(["audit", root]);
+  expect(invalidConfig.code).toBe(2);
+  expect(invalidConfig.stderr).toContain("Unsupported config version 2");
+});
+
+test("@claim:cli-demo-isolation creates its report in a new temporary directory", async () => {
+  const root = await cleanProject();
+  const before = await readdir(root, { recursive: true });
+  const result = await cli(["demo", "--json"], { cwd: root });
+  expect(result.code).toBe(0);
+  expect(JSON.parse(result.stdout)).toMatchObject({ project: "Parcel Lane API" });
+  const reportPath = result.stderr.match(/^HTML report: (.+)$/m)?.[1];
+  expect(reportPath).toBeTruthy();
+  expect(reportPath!.startsWith(tmpdir())).toBe(true);
+  expect((await stat(reportPath!)).isFile()).toBe(true);
+  expect(await readFile(reportPath!, "utf8")).toContain("Parcel Lane API");
+  expect(await readdir(root, { recursive: true })).toEqual(before);
+});
+
 test("@claim:demo-sandbox resets sample changes and sends no third-party requests", async ({ page }) => {
   const external: string[] = [];
   page.on("request", request => { if (new URL(request.url()).origin !== "http://127.0.0.1:4173") external.push(request.url()); });
@@ -180,7 +327,7 @@ test("@claim:demo-sandbox resets sample changes and sends no third-party request
   await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
   await page.getByRole("button", { name: "Mark documented" }).click();
   await expect(page.getByText("No handoff gaps found")).toBeVisible();
-  expect(await page.evaluate(() => localStorage.length)).toBe(0);
+  expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
   await page.reload();
   await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
   expect(external).toEqual([]);

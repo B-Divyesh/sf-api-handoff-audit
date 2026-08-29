@@ -76,10 +76,18 @@ for (const route of ["/", "/demo"]) {
 
 test("the deployment configuration gives hashed assets immutable caching", async () => {
   const config = JSON.parse(await readFile(join(process.cwd(), "dist/site/staticwebapp.config.json"), "utf8")) as {
-    routes: { route: string; headers: Record<string, string> }[];
+    navigationFallback?: unknown;
+    responseOverrides: Record<string, { rewrite: string }>;
+    routes: { route: string; rewrite?: string; headers?: Record<string, string> }[];
   };
   const assetRoute = config.routes.find(route => route.route === "/assets/*");
   expect(assetRoute?.headers["Cache-Control"]).toBe("public, max-age=31536000, immutable");
+  expect(config.navigationFallback).toBeUndefined();
+  expect(config.responseOverrides["404"]).toEqual({ rewrite: "/404.html" });
+  for (const route of ["/demo", "/privacy", "/terms"]) {
+    expect(config.routes.find(entry => entry.route === route)?.rewrite).toBe("/index.html");
+  }
+  expect(config.routes.find(entry => entry.route === "/404")).toBeUndefined();
 });
 
 test("keyboard users can reach and open the sample audit", async ({ page }) => {
@@ -91,8 +99,17 @@ test("keyboard users can reach and open the sample audit", async ({ page }) => {
   await expect(page).toHaveURL(/\/demo$/);
 });
 
+test("direct not-found navigation has the complete accessible site shell", async ({ page }) => {
+  await page.goto("/404");
+  await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Return to the audit" })).toBeVisible();
+  await expect(page.locator("header.site-header")).toBeVisible();
+  await expect(page.locator("footer")).toContainText("v0.1.0 · build 2026.08.29");
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute("href", "https://api-handoff-audit.sociobot.in/404");
+  await expect(page).toHaveTitle("Page not found — API Handoff Audit");
+});
+
 test("unknown routes show the designed in-app 404 page", async ({ page }) => {
   await page.goto("/missing-stall");
   await expect(page.getByRole("heading", { name: "This route has no request file" })).toBeVisible();
-  await expect(page.getByRole("link", { name: "Return to the audit" })).toBeVisible();
 });

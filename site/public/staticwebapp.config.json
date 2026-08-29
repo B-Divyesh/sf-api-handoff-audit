@@ -1,12 +1,20 @@
 {
-  "navigationFallback": {
-    "rewrite": "/index.html",
-    "exclude": ["/assets/*", "/*.svg", "/*.png", "/*.webp", "/*.xml", "/*.txt"]
-  },
   "responseOverrides": {
     "404": { "rewrite": "/404.html" }
   },
   "routes": [
+    {
+      "route": "/demo",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/privacy",
+      "rewrite": "/index.html"
+    },
+    {
+      "route": "/terms",
+      "rewrite": "/index.html"
+    },
     {
       "route": "/assets/*",
       "headers": {

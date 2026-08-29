@@ -9,5 +9,15 @@ export default defineConfig({
     emptyOutDir: true,
     target: "es2022",
     sourcemap: true,
+    // Keep the not-found response as a Vite page rather than an unrelated
+    // hand-written file. Azure rewrites real 404 responses to this page, and
+    // the shared client shell then supplies the same header, footer, build id,
+    // focus handling, and route metadata as an in-app not-found navigation.
+    rollupOptions: {
+      input: {
+        main: resolve(import.meta.dirname, "index.html"),
+        notFound: resolve(import.meta.dirname, "404.html"),
+      },
+    },
   },
 });
