@@ -40,5 +40,5 @@ action fit in one breath.
 | The generated result | report |
 | The included example | sample data |
 
-Catalog description: “Check an API repository before handoff.” It begins with a
-verb and has 41 characters.
+Catalog description: “Check API handoff gaps before a teammate inherits the
+repository.” It begins with a verb and has 65 characters.

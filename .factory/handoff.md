@@ -1,49 +1,65 @@
-# API Handoff Audit — adversarial review 2 handoff
+# API Handoff Audit — polish 2 handoff
 
-**Status: FAIL — 1 blocking, 2 major, 2 minor findings**
-
-**Reviewed candidate:** `161a3043916a4dbd8c8ffea0671e6eeb5e6a3391`
-
+**Status:** PASS — no outstanding review findings
+**Product repair commit:** `824bcac7e1b5212bd34faaa2b6851813accbef1f`
 **Live URL:** <https://api-handoff-audit.sociobot.in>
+**Deployed:** 2026-08-29 UTC
 
-**Reviewed:** 2026-08-29 UTC
+## What changed
 
-The full report is `.factory/review-2.md`. No product code was changed.
-
-## What was done
-
-- Opened the live landing page cold at 390 × 844 and 1440 × 900.
-- Exercised the one-click browser demo, correction, Reset, reload, Start for
-  real, storage isolation, sticky mobile banner, and request log.
-- Ran all 13 commands in `.factory/claims.json` separately from a fresh clone.
-- Re-audited every landing and README sentence and checked live claims against
-  the registry.
-- Rechecked every F-1 finding and historical verification defect in live code
-  and product behavior.
-- Crawled routes and links; checked direct metadata, HTTP 404 behavior,
-  History focus, headers, reduced motion, mobile targets, console output, and
-  serious/critical axe results.
+- Closed every finding in `.factory/review-1.md` and `.factory/review-2.md`.
+- Rewrote the privacy route to distinguish local audits from smoke requests,
+  removed the untestable hosted-workspace statement, and added a real
+  `--env-file` claim with sentinel-redaction coverage.
+- Completed the demo and package claim proofs: copied bundled files are now
+  compared byte-for-byte, and packaged installation must contain exactly one
+  binary.
+- Replaced the remaining indirect landing labels and market-lore 404 wording
+  without changing the night-market visual system.
+- Captured live evidence under `.factory/evidence/polish-2/`. The detailed
+  finding-to-evidence matrix is `.factory/polish-2.md`.
 
 ## Verification
+
+Fresh clone: `/tmp/api-handoff-audit-polish2.ah1IpF/clone`
+
+```sh
+npm ci
+# every literal command in .factory/claims.json, individually
+npm test
+npm run build
+cargo fmt --all -- --check
+cargo clippy --all-targets -- -D warnings
+cargo package --allow-dirty
+```
+
+All 14 registered claim commands passed from that clean clone, followed by the
+full suite: TypeScript check, 8 Rust tests, 1 Vitest test, and 31 Playwright
+tests. The build produced `target/release/api-handoff-audit` and `dist/site/`.
+`cargo package --allow-dirty` passed (16 files; 87.6 KiB / 25.9 KiB compressed).
+
+Post-deploy, `verify-url.sh` passed on the landing page. Live axe checks found
+zero serious or critical violations on `/`, `/demo?demo=1`, `/privacy`,
+`/terms`, and `/missing-stall`. The live demo check confirmed a sticky phone
+banner, correction/reset behavior, zero local/session storage, and only
+same-origin requests. Initial JavaScript is 11.95 kB raw / 4.42 kB gzip; CSS
+is 15.51 kB raw / 4.16 kB gzip.
+
+## Run and release
 
 ```sh
 npm ci
 npm test
+npm run build
+cargo run -- demo
 ```
 
-`npm test` passed with 8 Rust, 1 Vitest, and 30 Playwright tests. Every exact
-claim command passed independently in
-`/tmp/api-handoff-review2.XnlrKw/clone`. Live axe scans found zero
-serious/critical issues at mobile and desktop widths, and the demo request log
-contained only the product origin.
+`npm run build` writes the deployable static site to `dist/site/`. Publish the
+crate only through the factory-owned release process; the ready-to-publish
+check is `cargo package --allow-dirty`.
 
-## What remains
+## Known gaps
 
-- Reopen F-1-8: correct the broad/unlisted privacy copy on `/privacy`.
-- Register and test the public `--env-file` behavior.
-- Extend two claim tests to assert copied demo files and exactly one installed
-  binary.
-- Replace the inaccurate landing labels and metaphorical 404 copy listed in
-  F-2-4 and F-2-5.
-
-After those repairs, rerun the entire review; PASS requires zero findings.
+None. The product remains a local Rust CLI with a static documentation/demo
+site; it intentionally has no account, backend, analytics, billing, or
+service worker.
