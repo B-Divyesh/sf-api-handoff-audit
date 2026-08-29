@@ -85,6 +85,13 @@ test("@claim:package-install installs one packaged CLI with help, version, and J
   expect(stderr).toContain("HTML report:");
 });
 
+test("@claim:build-artifacts builds the release binary and deployable site", async () => {
+  test.setTimeout(180_000);
+  await exec("npm", ["run", "build"], { cwd: process.cwd() });
+  expect((await stat(join(process.cwd(), "target/release/api-handoff-audit"))).isFile()).toBe(true);
+  expect((await stat(join(process.cwd(), "dist/site/index.html"))).isFile()).toBe(true);
+});
+
 test("@claim:local-free-audit runs without a license or network request", async () => {
   let proxyRequests = 0;
   const proxy = createServer((_request, response) => { proxyRequests += 1; response.writeHead(500).end(); });
@@ -320,13 +327,30 @@ test("@claim:cli-demo-isolation creates its report in a new temporary directory"
   expect(await readdir(root, { recursive: true })).toEqual(before);
 });
 
+test("@claim:sample-report-content matches the CLI sample counts, finding, file, and next step in the browser demo", async ({ page }) => {
+  const result = await cli(["demo", "--json"]);
+  const report = JSON.parse(result.stdout);
+  expect(result.code).toBe(0);
+  expect(report).toMatchObject({ project: "Parcel Lane API", scanned_files: 3, setup_steps: 2, fixtures_checked: 1, smoke_requests: 2 });
+  expect(report.findings).toEqual(expect.arrayContaining([expect.objectContaining({ code: "VAR001", file: "requests/create-order.http", message: "WAREHOUSE_ID is used but not documented." })]));
+  await page.goto("/demo?demo=1");
+  await expect(page.locator(".audit-counts div").filter({ hasText: "Files" }).locator("dd")).toHaveText("3");
+  await expect(page.locator(".audit-counts div").filter({ hasText: "Setup steps" }).locator("dd")).toHaveText("2");
+  await expect(page.locator(".audit-counts div").filter({ hasText: "Fixtures" }).locator("dd")).toHaveText("1");
+  await expect(page.locator(".audit-counts div").filter({ hasText: "Smoke requests" }).locator("dd")).toHaveText("2");
+  await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();
+  await expect(page.locator(".finding code")).toHaveText("requests/create-order.http");
+  await expect(page.getByText("Add WAREHOUSE_ID under [[variables]] in handoff-audit.toml.")).toBeVisible();
+});
+
 test("@claim:demo-sandbox resets sample changes and sends no third-party requests", async ({ page }) => {
   const external: string[] = [];
   page.on("request", request => { if (new URL(request.url()).origin !== "http://127.0.0.1:4173") external.push(request.url()); });
-  await page.goto("/demo");
+  await page.goto("/demo?demo=1");
   await expect(page.getByText("Demo — sample data, nothing is saved")).toBeVisible();
-  await page.getByRole("button", { name: "Mark documented" }).click();
-  await expect(page.getByText("No handoff gaps found")).toBeVisible();
+  await page.getByRole("button", { name: "Show the corrected config" }).click();
+  await expect(page.getByRole("heading", { name: "Corrected handoff-audit.toml" })).toBeVisible();
+  await expect(page.getByText("The CLI does not make this edit.")).toBeVisible();
   expect(await page.evaluate(() => ({ local: localStorage.length, session: sessionStorage.length }))).toEqual({ local: 0, session: 0 });
   await page.reload();
   await expect(page.getByRole("heading", { name: "WAREHOUSE_ID is used but not documented." })).toBeVisible();

@@ -7,12 +7,12 @@ const product = "API Handoff Audit";
 
 type Route = "/" | "/demo" | "/privacy" | "/terms" | "/404";
 
-const meta: Record<Route, { title: string; description: string }> = {
-  "/": { title: "API Handoff Audit — check a repository handoff", description: "Find missing API variables and setup gaps, run named smoke requests, and share a redacted handoff report." },
-  "/demo": { title: "Demo — API Handoff Audit", description: "Inspect the bundled Parcel Lane API handoff report." },
-  "/privacy": { title: "Privacy — API Handoff Audit", description: "How API Handoff Audit handles repository data." },
-  "/terms": { title: "Terms — API Handoff Audit", description: "Terms for using API Handoff Audit." },
-  "/404": { title: "Page not found — API Handoff Audit", description: "Return to API Handoff Audit." },
+const meta: Record<Route, { title: string; description: string; socialTitle: string; socialDescription: string }> = {
+  "/": { title: "API Handoff Audit — check repository handoffs", description: "Find API handoff gaps, run named smoke requests, and write redacted reports.", socialTitle: "API Handoff Audit — check repository handoffs", socialDescription: "Find API handoff gaps, run named smoke requests, and write redacted reports." },
+  "/demo": { title: "Demo — API Handoff Audit", description: "Inspect the bundled Parcel Lane API sample report.", socialTitle: "Demo — API Handoff Audit", socialDescription: "Inspect the bundled Parcel Lane API sample report." },
+  "/privacy": { title: "Privacy — API Handoff Audit", description: "See how the local CLI handles repository data.", socialTitle: "Privacy — API Handoff Audit", socialDescription: "See how the local CLI handles repository data." },
+  "/terms": { title: "Terms — API Handoff Audit", description: "Read the terms for using API Handoff Audit.", socialTitle: "Terms — API Handoff Audit", socialDescription: "Read the terms for using API Handoff Audit." },
+  "/404": { title: "Page not found — API Handoff Audit", description: "Return to API Handoff Audit.", socialTitle: "Page not found — API Handoff Audit", socialDescription: "Return to API Handoff Audit." },
 };
 
 function shell(content: string, demo = false): string {
@@ -47,29 +47,33 @@ function terminal(): string {
 function home(): string {
   return shell(`<section class="hero">
     <div class="hero-art"><picture><source media="(max-width: 640px)" srcset="/assets/hero-market-768.webp"><img src="/assets/hero-market-1280.webp" width="1280" height="853" alt="API files and checklists hang like signs in a night-market inspection lane." fetchpriority="high"></picture></div>
-    <div class="hero-copy"><p class="eyebrow">A preflight check for API repositories</p><h1>Check an API handoff before it stalls</h1><p class="lede">For small teams giving a shared API workflow to a new contributor.</p>
-      <div class="hero-action"><a class="button primary route-link" href="/demo">Try it with sample data</a><span>See a complete audit with one real gap.</span></div>
+    <div class="hero-copy"><h1>Check an API repository before handoff</h1><p class="lede">For teams giving a shared API workflow to a new contributor.</p>
+      <div class="hero-action"><a class="button primary route-link" href="/demo?demo=1">Try it with sample data</a><span>See the sample report and its one finding.</span></div>
       <ul class="plain-facts"><li><span aria-hidden="true">◇</span> Free local audit.</li><li><span aria-hidden="true">◇</span> No account needed.</li><li><span aria-hidden="true">◇</span> Reports hide variable values.</li></ul>
     </div>
   </section>
-  <section class="preview" aria-labelledby="preview-title"><div class="section-label"><span>LIVE PREVIEW / 01</span><h2 id="preview-title">See the gap before your teammate does</h2><p>The bundled repository contains a request that uses an undocumented variable.</p></div>${terminal()}</section>
+  <section class="preview" aria-labelledby="preview-title"><div class="section-label"><span>Sample CLI output</span><h2 id="preview-title">Sample audit finding</h2><p>The bundled repository contains a request that uses an undocumented variable.</p></div>${terminal()}</section>
   <section id="how" class="steps" aria-labelledby="how-title"><p class="eyebrow">Three checks, one report</p><h2 id="how-title">How the handoff audit works</h2><ol>
     <li><span>01</span><div><h3>Scan the repository</h3><p>Point the CLI at Bruno, Postman, or <code>.http</code> files in Git.</p></div></li>
     <li><span>02</span><div><h3>Name one smoke request</h3><p>Choose a configured local or staging target. The CLI sends only that request.</p></div></li>
     <li><span>03</span><div><h3>Share the redacted report</h3><p>Write terminal, JSON, or HTML output without variable values or response bodies.</p></div></li>
   </ol></section>
-  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">A checker, not another client</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry and no hosted workspace.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p><p>It does not design APIs, edit requests, or store credentials.</p></div></section>
+  <section class="boundaries" aria-labelledby="boundaries-title"><div><p class="eyebrow">What the audit does not do</p><h2 id="boundaries-title">Your repository stays the workspace</h2></div><div><p>The audit reads local text files. It has no telemetry.</p><p>A smoke run contacts only the target you select. It never follows a redirect.</p><p>The CLI reports handoff gaps. You make repository changes yourself.</p></div></section>
   `);
 }
 
-let demoResolved = false;
+let demoShowsCorrectedConfig = false;
 function demo(): string {
-  const findings = demoResolved ? [] : sampleFindings;
-  return shell(`<section class="page-heading demo-heading"><p class="eyebrow">Bundled repository / Parcel Lane API</p><h1>Inspect a sample handoff report</h1><p>This is the output from <code>api-handoff-audit demo</code>.</p></section>
-    <section class="audit-board ${demoResolved ? "is-pass" : ""}" aria-labelledby="audit-state">
-      <div class="audit-summary"><div><span>HANDOFF STATE</span><h2 id="audit-state" tabindex="-1">${demoResolved ? "Ready to hand off" : "Needs one fix"}</h2></div><strong>${demoResolved ? "PASS" : "1 ERROR"}</strong></div>
+  const findings = demoShowsCorrectedConfig ? [] : sampleFindings;
+  const corrected = demoShowsCorrectedConfig ? `<section class="recorded-rerun" aria-labelledby="rerun-title"><p class="eyebrow">Recorded example after a repository edit</p><h3 id="rerun-title" tabindex="-1">Corrected handoff-audit.toml</h3><pre tabindex="0" aria-label="Corrected sample configuration">[[variables]]
+name = "WAREHOUSE_ID"
+description = "Order warehouse identifier"
+required = true</pre><p>The CLI does not make this edit. This recorded rerun shows the report after you add it.</p><div class="rerun-pass"><b>Recorded CLI rerun</b><strong>PASS</strong><span>No handoff gaps found.</span></div></section>` : "";
+  return shell(`<section class="page-heading demo-heading"><p class="eyebrow">Bundled repository / Parcel Lane API</p><h1>Inspect a sample handoff report</h1><p>This is recorded output from <code>api-handoff-audit demo</code>.</p></section>
+    <section class="audit-board" aria-labelledby="audit-state">
+      <div class="audit-summary"><div><span>HANDOFF STATE</span><h2 id="audit-state" tabindex="-1">Needs one fix</h2></div><strong>1 ERROR</strong></div>
       <dl class="audit-counts"><div><dt>Files</dt><dd>3</dd></div><div><dt>Setup steps</dt><dd>2</dd></div><div><dt>Fixtures</dt><dd>1</dd></div><div><dt>Smoke requests</dt><dd>2</dd></div></dl>
-      <div class="repo-layout"><div class="repo-tree"><h3>Repository</h3><ul><li>handoff-audit.toml</li><li>requests/health.bru</li><li class="active">requests/create-order.http</li><li>fixtures/order.json</li></ul></div><div class="finding-list"><h3>Findings</h3>${findings.length ? findings.map(f => `<article class="finding"><div><span>${f.code} · ERROR</span><code>${f.file}</code></div><h4>${f.message}</h4><p>${f.next}</p><button data-resolve>Mark documented</button></article>`).join("") : `<div class="empty-state"><b>✓ No handoff gaps found</b><p>Reset the demo to inspect the original finding.</p></div>`}</div></div>
+      <div class="repo-layout"><div class="repo-tree"><h3>Repository</h3><ul><li>handoff-audit.toml</li><li>requests/health.bru</li><li class="active">requests/create-order.http</li><li>fixtures/order.json</li></ul></div><div class="finding-list"><h3>Findings</h3>${findings.length ? findings.map(f => `<article class="finding"><div><span>${f.code} · ERROR</span><code>${f.file}</code></div><h4>${f.message}</h4><p>${f.next}</p><button data-show-corrected>Show the corrected config</button></article>`).join("") : ""}${corrected}</div></div>
       <p class="report-note">The report contains variable names and states. It excludes values and response bodies.</p>
     </section>
     <section class="demo-terminal"><h2>Replay the real CLI output</h2>${terminal()}</section>`, true);
@@ -92,6 +96,7 @@ function escapeHtml(value: string): string {
 }
 
 function currentRoute(): Route {
+  if (new URLSearchParams(window.location.search).get("demo") === "1") return "/demo";
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
   return (["/", "/demo", "/privacy", "/terms", "/404"] as Route[]).includes(path as Route) ? path as Route : "/404";
 }
@@ -102,7 +107,13 @@ function render(focus = false): void {
   app.innerHTML = renderers[route]();
   document.title = meta[route].title;
   document.querySelector<HTMLMetaElement>('meta[name="description"]')!.content = meta[route].description;
-  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')!.href = `https://api-handoff-audit.sociobot.in${route === "/404" ? "/404" : route}`;
+  const canonical = `https://api-handoff-audit.sociobot.in${route}`;
+  document.querySelector<HTMLLinkElement>('link[rel="canonical"]')!.href = canonical;
+  document.querySelector<HTMLMetaElement>('meta[property="og:title"]')!.content = meta[route].socialTitle;
+  document.querySelector<HTMLMetaElement>('meta[property="og:description"]')!.content = meta[route].socialDescription;
+  document.querySelector<HTMLMetaElement>('meta[property="og:url"]')!.content = canonical;
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:title"]')!.content = meta[route].socialTitle;
+  document.querySelector<HTMLMetaElement>('meta[name="twitter:description"]')!.content = meta[route].socialDescription;
   routeStatus.textContent = meta[route].title;
   bindActions();
   if (focus) {
@@ -121,7 +132,8 @@ function bindActions(): void {
   document.querySelectorAll<HTMLAnchorElement>("a.route-link").forEach(link => link.addEventListener("click", event => {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
     event.preventDefault();
-    navigate(new URL(link.href).pathname);
+    const target = new URL(link.href);
+    navigate(`${target.pathname}${target.search}`);
   }));
   document.querySelectorAll<HTMLButtonElement>("[data-replay]").forEach(button => button.addEventListener("click", () => {
     const pre = button.closest(".terminal")?.querySelector("pre");
@@ -130,8 +142,8 @@ function bindActions(): void {
     button.textContent = "Replaying";
     window.setTimeout(() => { button.textContent = "Replay output"; }, 1900);
   }));
-  document.querySelector<HTMLButtonElement>("[data-resolve]")?.addEventListener("click", () => { demoResolved = true; render(false); document.querySelector<HTMLElement>("#audit-state")?.focus(); });
-  document.querySelector<HTMLButtonElement>("[data-reset-demo]")?.addEventListener("click", () => { demoResolved = false; render(false); document.querySelector<HTMLElement>("#audit-state")?.focus(); });
+  document.querySelector<HTMLButtonElement>("[data-show-corrected]")?.addEventListener("click", () => { demoShowsCorrectedConfig = true; render(false); document.querySelector<HTMLElement>("#rerun-title")?.focus(); });
+  document.querySelector<HTMLButtonElement>("[data-reset-demo]")?.addEventListener("click", () => { demoShowsCorrectedConfig = false; render(false); document.querySelector<HTMLElement>("#audit-state")?.focus(); });
 }
 
 window.addEventListener("popstate", () => render(true));

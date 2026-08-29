@@ -70,6 +70,20 @@
     "sandbox": "fresh extracted .crate and isolated cargo install root"
   },
   {
+    "id": "build-artifacts",
+    "claim": "npm run build creates the release binary and deployable site in dist/site/",
+    "where": "README",
+    "test": "npm run test:e2e -- --grep @claim:build-artifacts",
+    "sandbox": "clean repository checkout; assert target/release/api-handoff-audit and dist/site/index.html after the documented build command"
+  },
+  {
+    "id": "sample-report-content",
+    "claim": "The bundled sample report has 3 files, 2 setup steps, 1 fixture, 2 smoke requests, and one WAREHOUSE_ID finding",
+    "where": "landing preview and browser demo",
+    "test": "npm run test:e2e -- --grep @claim:sample-report-content",
+    "sandbox": "fresh CLI demo and fresh browser context at /demo?demo=1; compare sample counts, finding, file, and next step"
+  },
+  {
     "id": "demo-sandbox",
     "claim": "Demo changes are not saved and the demo sends no third-party requests",
     "where": "demo banner",

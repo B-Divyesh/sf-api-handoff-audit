@@ -51,7 +51,7 @@ test("mobile header, footer, demo, and terminal controls have 44px hit areas", a
   }
 });
 
-test("does not advertise an unavailable CI Pack checkout", async ({ page }) => {
+test("does not advertise a checkout", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator('a[href*="/checkout"]')).toHaveCount(0);
   await expect(page.getByText("$39", { exact: true })).toHaveCount(0);
@@ -84,9 +84,9 @@ test("the deployment configuration gives hashed assets immutable caching", async
   expect(assetRoute?.headers["Cache-Control"]).toBe("public, max-age=31536000, immutable");
   expect(config.navigationFallback).toBeUndefined();
   expect(config.responseOverrides["404"]).toEqual({ rewrite: "/404.html" });
-  for (const route of ["/demo", "/privacy", "/terms"]) {
-    expect(config.routes.find(entry => entry.route === route)?.rewrite).toBe("/index.html");
-  }
+  expect(config.routes.find(entry => entry.route === "/demo")?.rewrite).toBe("/demo.html");
+  expect(config.routes.find(entry => entry.route === "/privacy")?.rewrite).toBe("/privacy.html");
+  expect(config.routes.find(entry => entry.route === "/terms")?.rewrite).toBe("/terms.html");
   expect(config.routes.find(entry => entry.route === "/404")).toBeUndefined();
 });
 
@@ -96,7 +96,36 @@ test("keyboard users can reach and open the sample audit", async ({ page }) => {
   await expect(page.getByRole("link", { name: "Skip to main content" })).toBeFocused();
   await page.getByRole("link", { name: "Try it with sample data" }).focus();
   await page.keyboard.press("Enter");
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/\/demo\?demo=1$/);
+});
+
+test("?demo=1 opens the isolated sample directly and keeps its controls visible on a phone", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?demo=1");
+  await expect(page.getByRole("heading", { name: "Inspect a sample handoff report" })).toBeVisible();
+  const banner = page.getByLabel("Demo mode");
+  await expect(banner).toHaveCSS("position", "sticky");
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const box = await banner.boundingBox();
+  expect(box).not.toBeNull();
+  expect(box!.y).toBeGreaterThanOrEqual(0);
+  expect(box!.y + box!.height).toBeLessThanOrEqual(844);
+  await expect(page.getByRole("button", { name: "Reset demo" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Start for real" })).toBeVisible();
+});
+
+test("direct route documents have their own social metadata before JavaScript runs", async () => {
+  const expected = [
+    ["demo.html", "Demo — API Handoff Audit", "https://api-handoff-audit.sociobot.in/demo"],
+    ["privacy.html", "Privacy — API Handoff Audit", "https://api-handoff-audit.sociobot.in/privacy"],
+    ["terms.html", "Terms — API Handoff Audit", "https://api-handoff-audit.sociobot.in/terms"],
+  ];
+  for (const [file, title, url] of expected) {
+    const html = await readFile(join(process.cwd(), "dist/site", file), "utf8");
+    expect(html).toContain(`<meta property="og:title" content="${title}"`);
+    expect(html).toContain(`<meta name="twitter:title" content="${title}"`);
+    expect(html).toContain(`<meta property="og:url" content="${url}"`);
+  }
 });
 
 test("direct not-found navigation has the complete accessible site shell", async ({ page }) => {

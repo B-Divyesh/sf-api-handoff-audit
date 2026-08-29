@@ -5,15 +5,15 @@
   "routes": [
     {
       "route": "/demo",
-      "rewrite": "/index.html"
+      "rewrite": "/demo.html"
     },
     {
       "route": "/privacy",
-      "rewrite": "/index.html"
+      "rewrite": "/privacy.html"
     },
     {
       "route": "/terms",
-      "rewrite": "/index.html"
+      "rewrite": "/terms.html"
     },
     {
       "route": "/assets/*",

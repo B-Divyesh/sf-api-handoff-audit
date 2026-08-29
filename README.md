@@ -2,9 +2,9 @@
 
 Check an API repository before a teammate inherits it.
 
-API Handoff Audit is a small Rust CLI for teams that keep API requests in Git. It finds missing variables, undocumented setup, and absent fixtures. It can run only the smoke requests you name against configured local or staging targets. Its terminal, JSON, and HTML reports never include variable values or response bodies.
+API Handoff Audit is a Rust CLI for teams that keep API requests in Git. It finds missing variables, undocumented setup, and absent fixtures. It runs only the smoke requests you name against configured local or staging targets. Its terminal, JSON, and HTML reports never include variable values or response bodies.
 
-The free CLI performs the full local audit and smoke run. The product does not offer a paid checkout at this time.
+The free CLI runs local audits and named smoke requests.
 
 ## Try the bundled project
 
@@ -18,14 +18,14 @@ The browser demo is available at <https://api-handoff-audit.sociobot.in/demo>.
 
 ## Install
 
-Build the single binary with Rust 1.85 or newer:
+Build the single binary:
 
 ```sh
 cargo install --path .
 api-handoff-audit --help
 ```
 
-The package starts at version `0.1.0`. Publishing is handled by Param Factory; this repository does not publish from CI.
+The package starts at version `0.1.0`.
 
 ## Configure a repository
 
@@ -103,6 +103,6 @@ npm run build:site
 
 ## Privacy and scope
 
-Audit reads local text files and does not use telemetry. Smoke runs send the selected request to the configured target. Reports show variable names and states, but never their values. The CLI is not an API designer, request editor, hosted workspace, or credential vault.
+Audit reads local text files and does not use telemetry. Smoke runs send the selected request to the configured target. Reports show variable names and states, but never their values. You make repository changes yourself.
 
 The product site has [privacy](https://api-handoff-audit.sociobot.in/privacy) and [terms](https://api-handoff-audit.sociobot.in/terms) pages. The MIT license is in [LICENSE](LICENSE).
