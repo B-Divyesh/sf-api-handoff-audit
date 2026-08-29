@@ -1,70 +1,109 @@
-# API Handoff Audit — independent QA handoff
+# API Handoff Audit — repair 3 handoff
 
-**Verdict:** **FAIL — do not release**
+**Status:** ready for release
 
-**Candidate:** `ef1c59b4e5f7b2e7187fa5c952d9e1645fefa4ff`
+**Repair commit:** `46b5070 fix: prove claims and return real 404s`
 
-**URL:** <https://api-handoff-audit.sociobot.in>
+**Deployed:** 2026-08-29 UTC to <https://api-handoff-audit.sociobot.in>
 
-**Verified:** 2026-08-29 UTC
+**Deployment:** Azure Static Web Apps production deployment
+`584387e9-08fd-4855-80e5-0cde745d76eb`
 
-**Artifact:** Rust CLI plus static Vite documentation/demo site
+## What changed
 
-The core CLI, packaged consumer, generated HTML report, and live demo work.
-All six commands currently listed in `.factory/claims.json` pass. Release is
-blocked because the claim inventory and claim proof are incomplete, and the
-live 404 behavior does not meet the route contract. Full evidence is in
-`.factory/verification-3.md`.
+- Completed `.factory/claims.json` with eleven independently executable,
+  tagged claim checks. The repaired `repo-gaps` sandbox now asserts both
+  `VAR001` for an undocumented variable and `SETUP001` for absent setup
+  documentation. New checks prove absent-fixture detection, all three documented
+  variable syntaxes, local/staging target policy, exact `0`/`1`/`2` exit codes,
+  temporary CLI-demo isolation, and clean-package installation.
+- Replaced the unrelated public `404.html`/`404.css` with Vite's generated
+  `site/404.html`, using the same client module as the app shell. Direct `/404`
+  now has the normal skip link, header, footer, build ID, title, description,
+  canonical URL, and accessible not-found content.
+- Removed the broad `navigationFallback`. Only `/demo`, `/privacy`, and
+  `/terms` rewrite to the SPA. All unknown paths reach the Static Web Apps 404
+  response override and return a real HTTP 404 while rendering that full shell.
+- Added focused regression coverage for the static-routing contract and direct
+  404 shell, plus claim-level CLI regressions.
 
-## Release blockers
+## Verification evidence
 
-### High — claims are not fully registered or proven
+Clean install and full local quality gate passed:
 
-The `repo-gaps` claim promises undocumented-variable and setup-gap detection,
-but its tagged test asserts only the undocumented `WAREHOUSE_ID`. The sample
-has two setup steps, so the test cannot detect a setup-gap regression. README
-promises such as absent-fixture detection and exact exit codes also have no
-entry in `.factory/claims.json`. The supplied claims policy makes this a failed
-review even though related untagged tests and manual checks pass.
+```sh
+npm ci
+npm test
+cargo fmt --all -- --check
+cargo clippy --all-targets -- -D warnings
+cargo package --allow-dirty
+npm run build
+```
 
-### Medium — 404 routes are inconsistent
+`npm test` passed TypeScript, 8 Rust tests, 1 Vitest test, and 26 Playwright
+tests. `npm run build` produced `target/release/api-handoff-audit` and
+`dist/site/`. `cargo package --allow-dirty` passed, and the clean extracted
+crate install exercised `--help`, `--version` (`0.1.0`), and parseable
+`demo --json` output.
 
-An unknown URL returns HTTP 200 with the client 404 view. Direct `/404` also
-returns 200 but serves a separate minimal HTML file without the standard
-header, footer, skip link, canonical, route description, or build ID. In-app
-and direct navigation therefore render different route shells.
+Every exact command listed in `.factory/claims.json` passed independently:
 
-## Passing evidence
+```sh
+npm run test:e2e -- --grep @claim:repo-gaps
+npm run test:e2e -- --grep @claim:absent-fixtures
+npm run test:e2e -- --grep @claim:workspace-formats
+npm run test:e2e -- --grep @claim:local-free-audit
+npm run test:e2e -- --grep @claim:redacted-reports
+npm run test:e2e -- --grep @claim:explicit-smoke
+npm run test:e2e -- --grep @claim:target-policy
+npm run test:e2e -- --grep @claim:exit-codes
+npm run test:e2e -- --grep @claim:cli-demo-isolation
+npm run test:e2e -- --grep @claim:package-install
+npm run test:e2e -- --grep @claim:demo-sandbox
+```
 
-- First-read gate passes with the audience, job, and one-click sample action in
-  the cold first viewport.
-- `npm ci`, `npm test`, `npm run build`, `cargo fmt --all -- --check`, strict
-  Clippy, and `cargo package --allow-dirty` pass.
-- `npm test` covers 8 Rust, 1 Vitest, and 21 Playwright tests.
-- A separately extracted and installed crate runs `--help`, `--version`, and a
-  parseable `demo --json`.
-- Independent loopback POST returns a passing 201 report; secret and response
-  body sentinels remain absent. Invalid input returns actionable exit-2 errors.
-- Live HTML, JS, CSS, art, robots, sitemap, and 404 files match the candidate
-  build byte-for-byte.
-- Desktop and 390 px routes have no serious/critical axe findings, console or
-  page errors, overflow, missing alt text, or sub-44px controls.
-- Demo reset/reload/storage/privacy, keyboard, focus, reduced motion, CSP,
-  security headers, and immutable hashed-asset caching pass.
-- Mobile Lighthouse: 99 performance, 100 accessibility, 100 best practices,
-  100 SEO; LCP 1.4 s, TBT 150 ms, CLS 0.
+Live route probes returned `200` for `/`, `/demo`, `/privacy`, `/terms`, and
+`/404`; an unknown `/missing-stall` returned **HTTP 404** with the configured
+CSP, nosniff, referrer, and permissions headers. The 404 response body is the
+same generated Vite page as `dist/site/404.html`. Hashed JS has
+`Cache-Control: public, max-age=31536000, immutable`.
 
-## Scope and next steps
+Fresh-build and deployed SHA-256 values match:
 
-This static product has no backend, product-unlock endpoint, sign-in, service
-worker, or offline claim, so rate-limit, persistence/concurrency, Entra, and
-PWA checks are not applicable. No checkout is advertised.
+| Asset | SHA-256 |
+| --- | --- |
+| `index.html` | `dfbe07d279a87507c690c2cd43a5d58b081004db9d19a7e43bae54b35a67cf94` |
+| `404.html` / unknown-route body | `cef31adf4721f8eb4d150c477ada7ee8ec974531b9499d9dac753397a8b3140f` |
+| `assets/main-DZSlfOtr.js` | `decd240aa9cb281039c5b6c7f232ad64deb19db393b0faf4192a5b5769c1d17a` |
+| `assets/main-CyieNWfr.css` | `e966e8ea7465c7e92b5b9abc1d0b2a006ecaa93213af3214f260aff3f158aa5c` |
 
-Before re-verification:
+`/opt/fleet/lib/verify-url.sh` passed for the live landing page: 674 ms load,
+no application console/page errors, `lang=en`, one `h1`, one `main`, and no
+images missing alt text. Live Playwright plus `@axe-core/playwright` found zero
+serious/critical violations across `/`, `/demo`, `/privacy`, `/terms`, `/404`,
+and the 404 response. Direct `/404` has one header, footer, skip link, canonical
+`https://api-handoff-audit.sociobot.in/404`, and build ID `v0.1.0 · build
+2026.08.29`. At 390 px the page has no horizontal overflow; keyboard focus
+starts at the skip link. Demo interaction leaves local/session storage empty,
+makes no third-party request, and the site has zero service-worker
+registrations. Reduced-motion CSS resolves animation duration to 0.01 ms.
 
-1. Audit every landing and README claim into `.factory/claims.json`; make each
-   exact tagged test prove the complete observable promise from a clean demo.
-2. Return a real HTTP 404 for unknown URLs and make direct `/404` use the same
-   accessible site shell as client navigation.
-3. Re-run all claim commands, full tests/build, clean package install, live
-   deployment hashes, browser privacy/accessibility checks, and Lighthouse.
+Mobile Lighthouse (Chrome 145) scored 100 performance, 100 accessibility, 100
+best practices, and 100 SEO. FCP was 0.9 s, LCP 1.4 s, TBT 0 ms, and CLS 0.
+
+## Scope and known gaps
+
+This remains the original Rust CLI plus static documentation/demo artifact.
+It has no backend, account, checkout, analytics, service worker, or offline
+claim. Offline/update behavior is therefore not applicable; the live check
+confirms no service worker is registered. No known release blockers remain.
+
+## Run and deploy
+
+```sh
+npm ci
+npm test
+npm run build
+cargo package --allow-dirty
+/opt/fleet/lib/deploy-static.sh api-handoff-audit dist/site
+```
