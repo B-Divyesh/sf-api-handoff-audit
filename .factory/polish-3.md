@@ -3,7 +3,7 @@
 **Repair commits:** `bdc6ead` (storage-proof and copy-audit repair), `47ff585`
 (completed phone-scroll assertion)  
 **Deployed artifact:** static `dist/site`  
-**Production deployment:** `785737e3-74a5-4ddb-8f29-7bc9e3f7aefb`  
+**Production deployment:** `b1931dfb-9e9d-4e36-8570-f8d17aa855e9`
 **Live URL:** <https://api-handoff-audit.sociobot.in>  
 **Evidence directory:** `.factory/evidence/polish-3/`
 
@@ -72,4 +72,3 @@ Accessibility 100, with LCP 1.4 s and CLS 0. The initial site JavaScript is
 There are no remaining findings or known gaps. The static product retains its
 night-market inspection-board identity; this repair changed proof, wording
 records, and test rigor without replacing the product surface.
-

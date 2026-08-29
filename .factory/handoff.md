@@ -3,7 +3,7 @@
 **Status:** PASS — all cumulative adversarial findings closed
 **Repair commits:** `bdc6ead`, `47ff585`
 **Deployed artifact:** `dist/site/` through the static work-order deploy
-**Production deployment:** `785737e3-74a5-4ddb-8f29-7bc9e3f7aefb`
+**Production deployment:** `b1931dfb-9e9d-4e36-8570-f8d17aa855e9`
 **Live URL:** <https://api-handoff-audit.sociobot.in>
 
 ## What changed
