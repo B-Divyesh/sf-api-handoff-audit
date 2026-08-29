@@ -1,4 +1,22 @@
-# API Handoff Audit — polish 3 handoff
+# API Handoff Audit — final independent-verification handoff
+
+**Status: PASS** — independently verified candidate
+`f9e54a7715ca5af208da2e4828b1a69d72b485d4` at
+<https://api-handoff-audit.sociobot.in/> on 2026-08-29. The live deployment
+matches the candidate build byte-for-byte for the landing HTML, demo HTML,
+JavaScript, and CSS. See `.factory/verification-7.md` for exact evidence,
+claim results, hashes, and the defect list (none by severity).
+
+The requested verifier ran every one of the 14 literal commands in
+`.factory/claims.json` from a clean install; all passed. `npm test` passed
+(TypeScript, 8 Rust tests, 1 Vitest test, and 31 Playwright tests), as did
+`npm run build`, warning-denied clippy, and `cargo package --allow-dirty`.
+Fresh desktop and 390px live checks passed with zero Axe serious/critical
+findings, no console/page errors, same-origin-only demo requests, and no demo
+storage writes. Mobile Lighthouse measured Performance 100 and Accessibility
+100 (LCP 1,355.5ms, CLS 0).
+
+## Previous builder handoff (retained for build context)
 
 **Status:** PASS — all cumulative adversarial findings closed
 **Repair commits:** `bdc6ead`, `47ff585`
