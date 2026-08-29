@@ -1,6 +1,53 @@
-# API Handoff Audit — final independent-verification handoff
+# API Handoff Audit — review 4 handoff
 
-**Status: PASS** — independently verified candidate
+**Status: PASS** — zero-finding adversarial review completed
+
+**Review commit:** `e3040dff2b86091043edb7410786ac5c82531898`
+**Live URL:** <https://api-handoff-audit.sociobot.in>
+**Scope:** reviewer-only verification; no product code changed.
+
+## What was done
+
+- Ran a cold first-read review at 390 × 844 and 1440 × 900.
+- Exercised `/demo?demo=1`, its correction/reset/reload flow, the sticky
+  banner, browser storage namespaces, and outgoing-request log.
+- Read the brief, design, claims registry, demo documentation, every previous
+  review/polish/verification note, and the previous handoff.
+- Ran every literal registered claim command separately from a new clean clone
+  after `npm ci`; all 14 passed.
+- Ran the complete clean-clone `npm test` gate: TypeScript, 8 Rust tests, 1
+  Vitest test, and 31 Playwright tests passed. The registered clean build also
+  produced the release binary and `dist/site/index.html`.
+- Checked live route metadata, HTTP status, link crawl, headers, 404, history,
+  focus, mobile overflow, console errors, and live Axe at phone and desktop
+  widths.
+- Wrote `.factory/review-4.md` with the full evidence, copy inventory, prior
+  finding closure map, and zero-finding verdict.
+
+## How to verify
+
+```sh
+npm ci
+npm test
+npm run build
+```
+
+Run the CLI sample from any temporary working directory with:
+
+```sh
+cargo run --manifest-path /path/to/api-handoff-audit/Cargo.toml -- demo
+```
+
+Open <https://api-handoff-audit.sociobot.in/demo?demo=1> for the isolated
+browser sample. Reset restores `WAREHOUSE_ID`; the banner describes its
+non-persistent sample state.
+
+## Known gaps and next steps
+
+None found. Future copy, sample-data, format, or privacy-flow changes should
+update the matching registered claim and rerun the review-4 checks.
+
+## Prior verification record
 `f9e54a7715ca5af208da2e4828b1a69d72b485d4` at
 <https://api-handoff-audit.sociobot.in/> on 2026-08-29. The live deployment
 matches the candidate build byte-for-byte for the landing HTML, demo HTML,
