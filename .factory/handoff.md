@@ -1,75 +1,61 @@
-# API Handoff Audit — polish 2 handoff
+# API Handoff Audit — review 3 handoff
 
-**Status:** PASS — independently verified at candidate `98d5ee4644dc0f037de5a6be97d237f2c325e0aa`; no outstanding findings
-**Product repair commit:** `824bcac7e1b5212bd34faaa2b6851813accbef1f`
+**Status:** FAIL — review documentation committed; product code was not changed.
+**Reviewed commit:** `806f7f3a10466b50491ea1dcab8bf065073695fe`
 **Live URL:** <https://api-handoff-audit.sociobot.in>
-**Deployed:** 2026-08-29 UTC
+**Review record:** `.factory/review-3.md`
 
-## What changed
+## What was done
 
-- Closed every finding in `.factory/review-1.md` and `.factory/review-2.md`.
-- Rewrote the privacy route to distinguish local audits from smoke requests,
-  removed the untestable hosted-workspace statement, and added a real
-  `--env-file` claim with sentinel-redaction coverage.
-- Completed the demo and package claim proofs: copied bundled files are now
-  compared byte-for-byte, and packaged installation must contain exactly one
-  binary.
-- Replaced the remaining indirect landing labels and market-lore 404 wording
-  without changing the night-market visual system.
-- Captured live evidence under `.factory/evidence/polish-2/`. The detailed
-  finding-to-evidence matrix is `.factory/polish-2.md`.
+- Ran the requested adversarial first-read review at the live URL in fresh
+  390 × 844 and 1440 × 900 Chromium contexts.
+- Tested the one-click browser sample, direct demo URL, correction/reset,
+  sticky phone banner, route navigation, back-button focus, request log, and
+  browser storage.
+- Read the brief, design thesis, claims, demo notes, all earlier reviews,
+  polish reports, verification reports, and the prior handoff.
+- Reviewed landing and README copy sentence by sentence, including word
+  counts, terminology, claims ownership, headings, and controls.
+- Cloned the repository with `git clone --no-local`, ran `npm ci`, each of the
+  14 literal claim commands, and the complete quality suite.
+- Checked live route metadata, 404 behavior, link crawl, mobile overflow,
+  axe at phone and desktop sizes, console output, headers, and the distinct
+  visual system.
 
 ## Verification
 
-Fresh clone: `/tmp/api-handoff-audit-polish2.ah1IpF/clone`
+Fresh clone: `/tmp/api-handoff-review3.YXGMgr/clone`
 
 ```sh
 npm ci
-# every literal command in .factory/claims.json, individually
+# each literal command in .factory/claims.json, independently
 npm test
-npm run build
-cargo fmt --all -- --check
-cargo clippy --all-targets -- -D warnings
-cargo package --allow-dirty
 ```
 
-All 14 registered claim commands passed from that clean clone, followed by the
-full suite: TypeScript check, 8 Rust tests, 1 Vitest test, and 31 Playwright
-tests. The build produced `target/release/api-handoff-audit` and `dist/site/`.
-`cargo package --allow-dirty` passed (16 files; 87.6 KiB / 25.9 KiB compressed).
+All 14 registered claim commands passed. `npm test` passed: TypeScript, 8 Rust
+tests, 1 Vitest test, and 31 Playwright tests. The build-artifacts claim also
+ran `npm run build` and verified the release binary plus `dist/site/index.html`.
 
-Post-deploy, `verify-url.sh` passed on the landing page. Live axe checks found
-zero serious or critical violations on `/`, `/demo?demo=1`, `/privacy`,
-`/terms`, and `/missing-stall`. The live demo check confirmed a sticky phone
-banner, correction/reset behavior, zero local/session storage, and only
-same-origin requests. Initial JavaScript is 11.95 kB raw / 4.42 kB gzip; CSS
-is 15.51 kB raw / 4.16 kB gzip.
+Live verification passed for cold first read, demo behavior, request isolation,
+route structure, metadata, direct/unknown 404, link crawl, browser history,
+focus changes, 390 px layout, and axe serious/critical checks on `/`,
+`/demo?demo=1`, `/privacy`, `/terms`, and an unknown route.
 
-## Run and release
+## Findings left
 
-```sh
-npm ci
-npm test
-npm run build
-cargo run -- demo
-```
+1. **F-3-1 (major):** the `demo-sandbox` claim test checks only local/session
+   storage and reload state. It must additionally prove no IndexedDB, Cache
+   Storage, or OPFS persistence, or prove a separate `demo:` namespace.
+2. **F-3-2 (minor):** `.factory/copy-audit.md` miscounts the audience sentence
+   and omits required rendered landing/README text. Regenerate it completely.
 
-`npm run build` writes the deployable static site to `dist/site/`. Publish the
-crate only through the factory-owned release process; the ready-to-publish
-check is `cargo package --allow-dirty`.
+The live manual storage inspection was empty for localStorage, sessionStorage,
+IndexedDB, Cache Storage, and OPFS; F-3-1 is an automated-proof gap, not an
+observed persistence defect.
 
-## Known gaps
+## Next steps
 
-None. The product remains a local Rust CLI with a static documentation/demo
-site; it intentionally has no account, backend, analytics, billing, or
-service worker.
-
-## Independent verification 6
-
-**PASS** on 2026-08-29 UTC for candidate
-`98d5ee4644dc0f037de5a6be97d237f2c325e0aa` at
-<https://api-handoff-audit.sociobot.in>. All 14 literal claim commands passed
-individually, alongside `npm test`, formatter, strict Clippy, crate packaging,
-and the exact production build. The deployed JS matched the local candidate
-build byte-for-byte. Full evidence and the severity table are in
-`.factory/verification-6.md`.
+Implement the two documentation/test repairs without changing the product’s
+scope, rerun the 14 claim commands and `npm test` from a fresh clone, then
+perform another full first-read review. No deployment, billing, DNS, or product
+code changes were made by this review.
