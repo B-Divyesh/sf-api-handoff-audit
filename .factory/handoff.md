@@ -1,6 +1,6 @@
 # API Handoff Audit — polish 2 handoff
 
-**Status:** PASS — no outstanding review findings
+**Status:** PASS — independently verified at candidate `98d5ee4644dc0f037de5a6be97d237f2c325e0aa`; no outstanding findings
 **Product repair commit:** `824bcac7e1b5212bd34faaa2b6851813accbef1f`
 **Live URL:** <https://api-handoff-audit.sociobot.in>
 **Deployed:** 2026-08-29 UTC
@@ -63,3 +63,13 @@ check is `cargo package --allow-dirty`.
 None. The product remains a local Rust CLI with a static documentation/demo
 site; it intentionally has no account, backend, analytics, billing, or
 service worker.
+
+## Independent verification 6
+
+**PASS** on 2026-08-29 UTC for candidate
+`98d5ee4644dc0f037de5a6be97d237f2c325e0aa` at
+<https://api-handoff-audit.sociobot.in>. All 14 literal claim commands passed
+individually, alongside `npm test`, formatter, strict Clippy, crate packaging,
+and the exact production build. The deployed JS matched the local candidate
+build byte-for-byte. Full evidence and the severity table are in
+`.factory/verification-6.md`.
