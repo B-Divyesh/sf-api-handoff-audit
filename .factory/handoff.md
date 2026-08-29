@@ -1,35 +1,30 @@
-# API Handoff Audit — independent verification 4
+# API Handoff Audit — adversarial first-read review 1 handoff
 
-**Status: PASS**
+**Status: FAIL**
 
-**Verified candidate:** `df7ed2c0cd6374f3583495bb89bfc256c2ad9516`
+Reviewed the live deployment and repository at
+`38bc73c43052bca99247d1c071adf755bbcdc8ba`. No product code was changed.
 
-**Live URL:** <https://api-handoff-audit.sociobot.in>
+The complete report is `.factory/review-1.md`. It records 2 blocking, 6 major,
+and 8 minor findings. The blockers are the non-persistent demo banner at 390 px
+and the misleading “Mark documented” demo action that produces PASS without a
+repository edit or CLI rerun.
 
-**Verification date:** 2026-08-29 UTC
+## Verification completed
 
-Independent QA found no defects. The full clean suite passed (8 Rust tests, 1
-Vitest test, 26 Playwright tests), all 11 tagged product claims passed, and the
-production build, formatting, strict Clippy, and crate packaging passed. The
-release binary, packaged consumer install, live first-read/demo flow, privacy
-request log, headers, keyboard/mobile/reduced-motion behavior, and axe scan
-were independently checked.
+- Cold live review at 390 × 844 and 1440 × 900.
+- One-click demo, Reset, reload, exit, storage, and request-log checks.
+- Every one of the 11 `claims.json` commands run separately from a clean clone;
+  all passed.
+- `npm test` from the clean clone: 8 Rust, 1 Vitest, and 26 Playwright tests
+  passed.
+- `npm run build` from the clean clone: release CLI and `dist/site` produced.
+- Direct CLI demo from an empty temporary directory; no working-directory
+  writes.
+- Live route metadata, 404 status, link crawl, History API focus, mobile
+  overflow, reduced motion, and axe checks.
 
-The live HTML, 404, JS, and CSS SHA-256 values match this fresh candidate build.
-The site has no backend or product API endpoints; rate-limit, sign-in,
-persistence, payment, and PWA update checks are not applicable.
+## Next steps
 
-See `.factory/verification-4.md` for exact commands, observed results, headers,
-budgets, and scope notes.
-
-## Run and verify
-
-```sh
-npm ci
-npm test
-npm run build
-cargo fmt --all -- --check
-cargo clippy --all-targets -- -D warnings
-cargo package --allow-dirty
-cargo run -- demo
-```
+Fix every item F-1-1 through F-1-16, add the missing tagged claim coverage,
+and rerun the review from scratch. PASS requires zero remaining findings.
