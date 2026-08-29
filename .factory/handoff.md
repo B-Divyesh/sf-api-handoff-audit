@@ -1,58 +1,49 @@
-# API Handoff Audit — verification 5 handoff
+# API Handoff Audit — adversarial review 2 handoff
 
-**Status: PASS — release candidate accepted**
+**Status: FAIL — 1 blocking, 2 major, 2 minor findings**
 
-**Candidate:** `96e988c3c51b72684f1bbb8e5b3adb531b7517ed`
+**Reviewed candidate:** `161a3043916a4dbd8c8ffea0671e6eeb5e6a3391`
 
 **Live URL:** <https://api-handoff-audit.sociobot.in>
 
-**Verified:** 2026-08-29 UTC
+**Reviewed:** 2026-08-29 UTC
 
-Independent verification is recorded in `.factory/verification-5.md`. No
-product code was changed.
+The full report is `.factory/review-2.md`. No product code was changed.
 
-## Verification summary
+## What was done
 
-- The checkout began clean at the candidate commit. `npm ci` succeeded with no
-  audit vulnerabilities.
-- Every one of the 13 exact commands in `.factory/claims.json` passed
-  independently, including clean package installation and clean build output.
-- `npm test`, formatting, clippy with warnings denied, `npm run build`, and
-  `cargo package --allow-dirty` all passed.
-- A separate loopback end-to-end exercise proved the normal POST path,
-  redaction, status handling, timeout, redirect refusal, host boundary,
-  invalid input recovery, and exit codes.
-- The installed package exposes the CLI help/version/demo behavior; the
-  generated HTML report passes desktop/mobile and axe checks.
-- All 18 deployed artifacts match the fresh candidate build byte for byte.
-- Cold desktop and 390 px mobile checks pass first-read, one-click demo,
-  keyboard, focus, touch target, reduced-motion, route, 404, privacy request,
-  storage, console, and serious/critical axe gates.
-- Live security headers and immutable hashed-asset caching are correct.
-- Lighthouse mobile scores are 100 performance, 100 accessibility, 100 best
-  practices, and 100 SEO; LCP is 1.30 s and CLS is 0.
+- Opened the live landing page cold at 390 × 844 and 1440 × 900.
+- Exercised the one-click browser demo, correction, Reset, reload, Start for
+  real, storage isolation, sticky mobile banner, and request log.
+- Ran all 13 commands in `.factory/claims.json` separately from a fresh clone.
+- Re-audited every landing and README sentence and checked live claims against
+  the registry.
+- Rechecked every F-1 finding and historical verification defect in live code
+  and product behavior.
+- Crawled routes and links; checked direct metadata, HTTP 404 behavior,
+  History focus, headers, reduced motion, mobile targets, console output, and
+  serious/critical axe results.
 
-Evidence screenshots, URL-verifier output, and Lighthouse JSON are under
-`.factory/evidence/verification-5/`.
-
-## Reproduce
+## Verification
 
 ```sh
 npm ci
 npm test
-cargo fmt --all -- --check
-cargo clippy --all-targets -- -D warnings
-npm run build
-cargo package --allow-dirty
-cargo run -- demo
 ```
 
-Deployable static output is `dist/site/`; the release CLI is
-`target/release/api-handoff-audit`.
+`npm test` passed with 8 Rust, 1 Vitest, and 30 Playwright tests. Every exact
+claim command passed independently in
+`/tmp/api-handoff-review2.XnlrKw/clone`. Live axe scans found zero
+serious/critical issues at mobile and desktop widths, and the demo request log
+contained only the product origin.
 
-## Defects and known gaps
+## What remains
 
-No release-blocking, high, medium, or low product defects were found. The
-product has no backend, unlock endpoint, sign-in, or service worker, so the
-corresponding rate-limit, Entra, persistence/concurrency, and PWA checks do not
-apply.
+- Reopen F-1-8: correct the broad/unlisted privacy copy on `/privacy`.
+- Register and test the public `--env-file` behavior.
+- Extend two claim tests to assert copied demo files and exactly one installed
+  binary.
+- Replace the inaccurate landing labels and metaphorical 404 copy listed in
+  F-2-4 and F-2-5.
+
+After those repairs, rerun the entire review; PASS requires zero findings.
