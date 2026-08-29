@@ -1,4 +1,21 @@
-# API Handoff Audit v0.1.0 repair handoff
+# API Handoff Audit — independent QA override: FAIL
+
+**Candidate:** `c39439484680cf1ee2e9c6ac0744b40808386ef4`
+**URL:** <https://api-handoff-audit.sociobot.in>
+**Status:** **FAIL — do not release**
+
+Independent verification on 2026-08-29 found three release blockers: the
+required `@claim:explicit-smoke` command fails, `npm test` fails because its
+clean-consumer package-install test exceeds its 30-second timeout, and the
+live $39 CI Pack checkout returns HTTP 404. It also found undersized mobile
+touch targets and an untested response-body privacy promise. The full evidence,
+including passing checks, live deployment hash match, rate-limit result, and
+re-verification steps, is in `verification-2.md`.
+
+This override supersedes the release-status claim below until the listed
+defects are repaired and independently re-verified.
+
+# Previous builder handoff (superseded)
 
 ## Release status
 
