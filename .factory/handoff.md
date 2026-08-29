@@ -54,4 +54,27 @@ Install the CLI from a checkout with `cargo install --path .`; run the bundled s
 
 ## Deployment evidence
 
-Deployment and live re-verification are recorded after the repair commit is pushed and the static deployment completes.
+Commit `17a7115` was pushed to `origin/main` and deployed with:
+
+```sh
+/opt/fleet/lib/deploy-static.sh api-handoff-audit dist/site
+```
+
+Live verification at `https://api-handoff-audit.sociobot.in` on 2026-08-29 UTC:
+
+- The live document references `assets/index-D9SE1PEe.js`; its SHA-256 is
+  `af7242c2d205110047660125edea829fc66367d92e96d2cbdf359aae258ba582`, equal
+  to the deployed local build.
+- The hashed JS has `Cache-Control: public, max-age=31536000, immutable`.
+  The document is short-cached. CSP confines connections and forms to
+  same-origin and includes `frame-ancestors 'none'`; HSTS, nosniff, referrer,
+  and permissions headers are present.
+- Standalone live Playwright + axe scans passed on desktop `/`, `/demo`,
+  `/privacy`, `/terms`, and `/404`, and on `/` plus `/demo` at 390 × 844:
+  zero serious/critical violations, one `h1`, one `main`, no console errors,
+  and no mobile horizontal overflow.
+- The live skip link receives the first Tab focus. The demo made only
+  same-origin requests and had empty `localStorage`. No checkout link remains
+  in the live document; `/ci-pack` resolves to the designed in-app 404.
+- There is no offline/PWA claim or service worker. Update behavior is covered
+  by the verified short document cache and immutable content-hashed assets.
