@@ -105,7 +105,12 @@ test("?demo=1 opens the isolated sample directly and keeps its controls visible 
   await expect(page.getByRole("heading", { name: "Inspect a sample handoff report" })).toBeVisible();
   const banner = page.getByLabel("Demo mode");
   await expect(banner).toHaveCSS("position", "sticky");
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const scrollY = await page.evaluate(() => {
+    document.documentElement.style.scrollBehavior = "auto";
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    return window.scrollY;
+  });
+  expect(scrollY).toBeGreaterThan(300);
   const box = await banner.boundingBox();
   expect(box).not.toBeNull();
   expect(box!.y).toBeGreaterThanOrEqual(0);
